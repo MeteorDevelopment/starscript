@@ -28,6 +28,12 @@ public class Compiler implements Expr.Visitor {
 
     // Expressions
 
+
+    @Override
+    public void visitNull(Expr.Null expr) {
+        script.write(Instruction.Null);
+    }
+
     @Override
     public void visitString(Expr.String expr) {
         script.write(blockDepth > 0 ? Instruction.Constant : Instruction.ConstantAppend, Value.string(expr.string));

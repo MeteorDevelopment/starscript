@@ -3,6 +3,7 @@ package meteordevelopment.starscript;
 /** Instructions used by {@link Starscript}. */
 public enum Instruction {
     Constant,
+    Null,
     True,
     False,
 

@@ -35,6 +35,7 @@ public class Starscript {
         while (true) {
             switch (Instruction.valueOf(script.code[ip++])) {
                 case Constant:       push(script.constants.get(script.code[ip++])); break;
+                case Null:           push(Value.null_()); break;
                 case True:           push(Value.bool(true)); break;
                 case False:          push(Value.bool(false)); break;
 

@@ -117,6 +117,7 @@ public class Lexer {
         createToken(Token.Identifier);
 
         switch (lexeme) {
+            case "null":  token = Token.Null; break;
             case "true":  token = Token.True; break;
             case "false": token = Token.False; break;
             case "and":   token = Token.And; break;

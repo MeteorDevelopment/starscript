@@ -5,6 +5,7 @@ import java.util.List;
 /** Expressions that form the AST (abstract syntax tree) of parsed starscript code. */
 public abstract class Expr {
     public interface Visitor {
+        void visitNull(Null expr);
         void visitString(String expr);
         void visitNumber(Number expr);
         void visitBool(Bool expr);
@@ -20,6 +21,13 @@ public abstract class Expr {
     }
 
     public abstract void accept(Visitor visitor);
+
+    public static class Null extends Expr {
+        @Override
+        public void accept(Visitor visitor) {
+            visitor.visitNull(this);
+        }
+    }
 
     public static class String extends Expr {
         public final java.lang.String string;

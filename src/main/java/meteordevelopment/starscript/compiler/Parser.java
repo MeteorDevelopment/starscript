@@ -172,6 +172,7 @@ public class Parser {
     }
 
     private Expr primary() {
+        if (match(Token.Null)) return new Expr.Null();
         if (match(Token.String)) return new Expr.String(previous.lexeme);
         if (match(Token.True, Token.False)) return new Expr.Bool(previous.lexeme.equals("true"));
         if (match(Token.Number)) return new Expr.Number(Double.parseDouble(previous.lexeme));

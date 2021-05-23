@@ -4,6 +4,7 @@ package meteordevelopment.starscript.compiler;
 public enum Token {
     String, Identifier, Number,
 
+    Null,
     True, False,
     And, Or,
 
