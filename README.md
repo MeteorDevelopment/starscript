@@ -18,6 +18,18 @@ Fast text formatting language for Java.
 - `Name: {player.name}`
 
 ## Usage
+Gradle:
+```groovy
+repositories {
+    maven { url = "https://jitpack.io" }
+}
+
+dependencies {
+    implementation "com.github.MeteorDevelopment:starscript:0.1.0"
+}
+```
+
+Java:
 ```java
 // Parse
 Parser.Result result = Parser.parse("Hello {name}!");
