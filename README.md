@@ -33,6 +33,7 @@ Script script = Compiler.compile(result);
 
 // Create starscript instance
 Starscript ss = new Starscript();
+StandardLib.init(ss); // Adds a few default functions, not required
 
 ss.set("name", Value.string("MineGame159"));
 // ss.set("name", () -> Value.string("MineGame159"));
