@@ -28,7 +28,7 @@ if (result.hasErrors()) {
     return;
 }
 
-// Check for errors
+// Compile
 Script script = Compiler.compile(result);
 
 // Create starscript instance
