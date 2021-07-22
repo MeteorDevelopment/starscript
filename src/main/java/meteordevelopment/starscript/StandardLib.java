@@ -2,16 +2,23 @@ package meteordevelopment.starscript;
 
 import meteordevelopment.starscript.value.Value;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Random;
 
 /** Standard library with some default functions and variables. */
 public class StandardLib {
     private static final Random rand = new Random();
 
+    public static final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd. MM. yyyy");
+
     /** Adds the functions and variables to the provided {@link Starscript} instance. */
     public static void init(Starscript ss) {
         // Variables
         ss.set("PI", Value.number(Math.PI));
+        ss.set("time", () -> Value.string(timeFormat.format(new Date())));
+        ss.set("date", () -> Value.string(dateFormat.format(new Date())));
 
         // Numbers
         ss.set("round", Value.function(StandardLib::round));
