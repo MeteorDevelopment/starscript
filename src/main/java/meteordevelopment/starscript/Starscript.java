@@ -57,8 +57,8 @@ public class Starscript {
                 case Less:           { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.bool(a.getNumber() < b.getNumber())); else error("This operation requires 2 number."); break; }
                 case LessEqual:      { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.bool(a.getNumber() <= b.getNumber())); else error("This operation requires 2 number."); break; }
 
-                case Variable:       { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = globals.get(name); if (s != null) push(s.get()); else error("Could not find variable with the name '%s'.", name); break; }
-                case Get:            { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = pop().getMap().get(name); if (s != null) push(s.get()); else error("Could not find field with the name '%s'.", name); break; }
+                case Variable:       { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = globals.get(name); push(s != null ? s.get() : Value.null_()); break; }
+                case Get:            { String name = script.constants.get(script.code[ip++]).getString(); Value v = pop(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().get(name); push(s != null ? s.get() : Value.null_()); break; }
                 case Call:           { int argCount = script.code[ip++]; Value a = peek(argCount); if (a.isFunction()) { Value r = a.getFunction().run(this, argCount); pop(); push(r); } else error("Tried to call a %s, can only call functions.", a.type); break; }
 
                 case Jump:           { int jump = (script.code[ip++] << 8) | script.code[ip++]; ip += jump; break; }
@@ -68,7 +68,7 @@ public class Starscript {
                 case Append:         sb.append(pop().toString()); break;
                 case ConstantAppend: sb.append(script.constants.get(script.code[ip++]).toString()); break;
                 case VariableAppend: { Supplier<Value> s = globals.get(script.constants.get(script.code[ip++]).getString()); sb.append((s == null ? Value.null_() : s.get()).toString()); break; }
-                case GetAppend:      { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = pop().getMap().get(name); if (s != null) sb.append(s.get().toString()); else error("Could not find field with the name '%s'.", name); break; }
+                case GetAppend:      { String name = script.constants.get(script.code[ip++]).getString(); Value v = pop(); if (!v.isMap()) { sb.append(Value.null_()); break; } Supplier<Value> s = v.getMap().get(name); sb.append((s != null ? s.get() : Value.null_()).toString()); break; }
                 case CallAppend:     { int argCount = script.code[ip++]; Value a = peek(argCount); if (a.isFunction()) { Value r = a.getFunction().run(this, argCount); pop(); sb.append(r.toString()); } else error("Tried to call a %s, can only call functions.", a.type); break; }
 
                 case End:            break loop;
