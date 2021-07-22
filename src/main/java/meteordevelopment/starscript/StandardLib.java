@@ -2,8 +2,12 @@ package meteordevelopment.starscript;
 
 import meteordevelopment.starscript.value.Value;
 
+import java.util.Random;
+
 /** Standard library with some default functions and variables. */
 public class StandardLib {
+    private static final Random rand = new Random();
+
     /** Adds the functions and variables to the provided {@link Starscript} instance. */
     public static void init(Starscript ss) {
         // Variables
@@ -14,6 +18,7 @@ public class StandardLib {
         ss.set("floor", Value.function(StandardLib::floor));
         ss.set("ceil", Value.function(StandardLib::ceil));
         ss.set("abs", Value.function(StandardLib::abs));
+        ss.set("random", Value.function(StandardLib::random));
 
         // Strings
         ss.set("toUpper", Value.function(StandardLib::toUpper));
@@ -58,6 +63,19 @@ public class StandardLib {
         if (argCount != 1) ss.error("abs() requires 1 argument, got %d.", argCount);
         double a = ss.popNumber("Argument to abs() needs to be a number.");
         return Value.number(Math.abs(a));
+    }
+
+    public static Value random(Starscript ss, int argCount) {
+        if (argCount == 0) return Value.number(rand.nextDouble());
+        else if (argCount == 2) {
+            double max = ss.popNumber("Second argument to random() needs to be a number.");
+            double min = ss.popNumber("First argument to random() needs to be a number.");
+
+            return Value.number(min + (max - min) * rand.nextDouble());
+        }
+
+        ss.error("random() requires 0 or 2 arguments, got %d.", argCount);
+        return Value.null_();
     }
 
     // Strings

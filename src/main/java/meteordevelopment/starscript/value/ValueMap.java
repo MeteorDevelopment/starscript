@@ -12,8 +12,9 @@ public class ValueMap {
         values.put(name, supplier);
     }
 
-    public void set(String name, Value value) {
+    public ValueMap set(String name, Value value) {
         set(name, () -> value);
+        return this;
     }
 
     public Supplier<Value> get(String name) {

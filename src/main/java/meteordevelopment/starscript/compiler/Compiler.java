@@ -115,14 +115,24 @@ public class Compiler implements Expr.Visitor {
 
     @Override
     public void visitGet(Expr.Get expr) {
+        boolean prevGetAppend = getAppend;
+        getAppend = false;
+
         compile(expr.object);
+
+        getAppend = prevGetAppend;
         script.write(getAppend ? Instruction.GetAppend : Instruction.Get, Value.string(expr.name));
     }
 
     @Override
     public void visitCall(Expr.Call expr) {
+        boolean prevCallAppend = callAppend;
         compile(expr.callee);
+
+        callAppend = false;
         for (Expr e : expr.args) compile(e);
+
+        callAppend = prevCallAppend;
         script.write(callAppend ? Instruction.CallAppend : Instruction.Call, expr.args.size());
     }
 
