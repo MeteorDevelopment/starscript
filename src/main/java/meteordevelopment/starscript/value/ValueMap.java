@@ -8,8 +8,9 @@ import java.util.function.Supplier;
 public class ValueMap {
     private final Map<String, Supplier<Value>> values = new HashMap<>();
 
-    public void set(String name, Supplier<Value> supplier) {
+    public ValueMap set(String name, Supplier<Value> supplier) {
         values.put(name, supplier);
+        return this;
     }
 
     public ValueMap set(String name, Value value) {
