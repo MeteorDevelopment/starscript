@@ -2,6 +2,8 @@ package meteordevelopment.starscript.value;
 
 import meteordevelopment.starscript.utils.SFunction;
 
+import java.util.function.Supplier;
+
 /** Class that holds any starscript value. */
 public class Value {
     private static final Value NULL = new Value(ValueType.Null);
@@ -122,7 +124,10 @@ public class Value {
             case Number:   { double n = getNumber(); return n % 1 == 0 ? Integer.toString((int) n) : Double.toString(n); }
             case String:   return getString();
             case Function: return "<function>";
-            case Map:      return "<map>";
+            case Map: {
+                Supplier<Value> s = getMap().get("_toString");
+                return s == null ? "<map>" : s.get().toString();
+            }
             default:       return "";
         }
     }
