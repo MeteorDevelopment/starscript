@@ -30,6 +30,11 @@ public class Lexer {
         if (expressionDepth > 0) {
             // Scan expression
             skipWhitespace();
+            if (isAtEnd()) {
+                createToken(Token.EOF);
+                return;
+            }
+
             char c = advance();
 
             if (isDigit(c) || (c == '-' && isDigit(peek()))) number();
