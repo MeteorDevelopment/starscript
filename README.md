@@ -56,4 +56,4 @@ System.out.println(ss.run(script)); // Hello MineGame159!
 
 ## Documentation
 Full syntax and features can be found on [wiki](https://github.com/MeteorDevelopment/starscript/wiki).  
-Javadocs can be found [here](https://javadoc.jitpack.io/com/github/MeteorDevelopment/starscript/0.1.0/javadoc).
+Javadocs can be found [here](https://javadoc.jitpack.io/com/github/MeteorDevelopment/starscript/latest/javadoc).
