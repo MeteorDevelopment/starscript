@@ -1,4 +1,3 @@
-![JitPack](https://img.shields.io/jitpack/v/github/MeteorDevelopment/starscript)
 # Starscript
 Fast text formatting language for Java.
 
@@ -21,11 +20,14 @@ Fast text formatting language for Java.
 Gradle:
 ```groovy
 repositories {
-    maven { url = "https://jitpack.io" }
+    maven {
+        name = "meteor-maven"
+        url = "https://maven.meteordev.org"
+    }
 }
 
 dependencies {
-    implementation "com.github.MeteorDevelopment:starscript:0.1.5"
+    implementation "meteordevelopment:starscript:0.1.5"
 }
 ```
 
