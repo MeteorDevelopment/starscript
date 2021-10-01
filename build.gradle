@@ -1,11 +1,19 @@
 plugins {
-    id 'java'
+    id "java"
+    id "maven-publish"
 }
 
-group 'meteordevelopment'
-version '0.1.5'
+group "meteordevelopment"
+version "0.1.5"
 
-sourceCompatibility = targetCompatibility = 1.8
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+java {
+    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+    withSourcesJar()
+    withJavadocJar()
+}
 
 compileJava {
     options.encoding = "UTF-8"
@@ -15,17 +23,30 @@ compileTestJava {
     options.encoding = "UTF-8"
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
+javadoc {
+    options.addStringOption('Xdoclint:none', '-quiet')
 }
 
-task javadocJar(type: Jar) {
-    classifier = 'javadoc'
-    from javadoc
-}
+publishing {
+    publications {
+        java(MavenPublication) {
+            from components.java
+        }
+    }
 
-artifacts {
-    archives sourcesJar
-    archives javadocJar
+    repositories {
+        maven {
+            name = "meteor-maven"
+            url = "https://maven.meteordev.org"
+
+            credentials {
+                username = System.getenv("MAVEN_METEOR_ALIAS")
+                password = System.getenv("MAVEN_METEOR_TOKEN")
+            }
+
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+    }
 }
