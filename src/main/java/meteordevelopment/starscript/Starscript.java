@@ -25,11 +25,15 @@ public class Starscript {
     }
 
     /** Runs the script and fills the provided {@link StringBuilder}. Throws {@link StarscriptError} if a runtime error happens. */
-    public String run(Script script, StringBuilder sb) {
+    public Section run(Script script, StringBuilder sb) {
         stack.clear();
 
         sb.setLength(0);
         int ip = 0;
+
+        Section firstSection = null;
+        Section section = null;
+        int index = 0;
 
         loop:
         while (true) {
@@ -63,7 +67,9 @@ public class Starscript {
 
                 case Jump:           { int jump = (script.code[ip++] << 8) | script.code[ip++]; ip += jump; break; }
                 case JumpIfTrue:     { int jump = (script.code[ip++] << 8) | script.code[ip++]; if (peek().isTruthy()) ip += jump; break; }
-                case JumpIfFalse:     { int jump = (script.code[ip++] << 8) | script.code[ip++]; if (!peek().isTruthy()) ip += jump; break; }
+                case JumpIfFalse:    { int jump = (script.code[ip++] << 8) | script.code[ip++]; if (!peek().isTruthy()) ip += jump; break; }
+
+                case Section:        if (firstSection == null) { firstSection = new Section(index, sb.toString()); section = firstSection; } else { section.next = new Section(index, sb.toString()); section = section.next; } sb.setLength(0); index = script.code[ip++]; break;
 
                 case Append:         sb.append(pop().toString()); break;
                 case ConstantAppend: sb.append(script.constants.get(script.code[ip++]).toString()); break;
@@ -75,11 +81,16 @@ public class Starscript {
             }
         }
 
-        return sb.toString();
+        if (firstSection != null) {
+            section.next = new Section(index, sb.toString());
+            return firstSection;
+        }
+
+        return new Section(index, sb.toString());
     }
 
     /** Runs the script. Throws {@link StarscriptError} if a runtime error happens. */
-    public String run(Script script) {
+    public Section run(Script script) {
         return run(script, new StringBuilder());
     }
 

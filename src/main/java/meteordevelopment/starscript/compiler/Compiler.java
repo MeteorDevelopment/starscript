@@ -28,7 +28,6 @@ public class Compiler implements Expr.Visitor {
 
     // Expressions
 
-
     @Override
     public void visitNull(Expr.Null expr) {
         script.write(Instruction.Null);
@@ -161,6 +160,11 @@ public class Compiler implements Expr.Visitor {
         compile(expr.falseExpr);
 
         script.patchJump(endJump);
+    }
+
+    @Override
+    public void visitSection(Expr.Section expr) {
+        script.write(Instruction.Section, expr.index);
     }
 
     // Helpers

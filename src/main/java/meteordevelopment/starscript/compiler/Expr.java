@@ -18,6 +18,7 @@ public abstract class Expr {
         void visitCall(Call expr);
         void visitLogical(Logical expr);
         void visitConditional(Conditional expr);
+        void visitSection(Section expr);
     }
 
     public abstract void accept(Visitor visitor);
@@ -200,6 +201,19 @@ public abstract class Expr {
         @Override
         public void accept(Visitor visitor) {
             visitor.visitConditional(this);
+        }
+    }
+
+    public static class Section extends Expr {
+        public final int index;
+
+        public Section(int index) {
+            this.index = index;
+        }
+
+        @Override
+        public void accept(Visitor visitor) {
+            visitor.visitSection(this);
         }
     }
 }

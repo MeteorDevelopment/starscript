@@ -70,7 +70,7 @@ public class Lexer {
             }
         }
         else {
-            // Scan string or start an expression
+            // Scan string, start an expression or section
             char c = advance();
             if (c == '\n') line++;
 
@@ -78,8 +78,12 @@ public class Lexer {
                 expressionDepth++;
                 createToken(Token.LeftBrace);
             }
+            else if (c == '#') {
+                while (isDigit(peek())) advance();
+                createToken(Token.Section, source.substring(start + 1, current));
+            }
             else {
-                while (!isAtEnd() && peek() != '{') {
+                while (!isAtEnd() && peek() != '{' && peek() != '#') {
                     if (peek() == '\n') line++;
                     advance();
                 }

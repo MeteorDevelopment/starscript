@@ -33,6 +33,8 @@ public enum Instruction {
     JumpIfTrue,
     JumpIfFalse,
 
+    Section,
+
     Append,
     ConstantAppend,
     VariableAppend,

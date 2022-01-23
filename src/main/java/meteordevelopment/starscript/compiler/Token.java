@@ -21,5 +21,7 @@ public enum Token {
     LeftParen, RightParen,
     LeftBrace, RightBrace,
 
+    Section,
+
     Error, EOF
 }
