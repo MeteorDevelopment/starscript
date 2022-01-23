@@ -179,6 +179,8 @@ public class Parser {
         if (match(Token.Identifier)) return new Expr.Variable(previous.lexeme);
 
         if (match(Token.Section)) {
+            if (previous.lexeme.isEmpty()) error("Expected section index.");
+
             int index = Integer.parseInt(previous.lexeme);
             if (index > 255) error("Section index cannot be larger than 255.");
             return new Expr.Section(index);
