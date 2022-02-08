@@ -7,7 +7,7 @@ import meteordevelopment.starscript.value.ValueMap;
 
 public class Main {
     public static void main(String[] args) {
-        String source = "Name: #1{player.name, #0, \", HI\"}";
+        String source = "Name: #1{player.name}{#0 \", HI\"}";
 
         Parser.Result result = Parser.parse(source);
         Script script = Compiler.compile(result);
@@ -25,6 +25,7 @@ public class Main {
 
         ValueMap player = new ValueMap();
         player.set("name", Value.string("MineGame159"));
+        player.set("age", Value.function((ss1, agrCount) -> Value.number(5)));
         ss.set("player", Value.map(player));
 
         System.out.println("Input: " + source);

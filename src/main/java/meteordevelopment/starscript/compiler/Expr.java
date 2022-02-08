@@ -70,10 +70,10 @@ public abstract class Expr {
     }
 
     public static class Block extends Expr {
-        public final List<Expr> exprs;
+        public final Expr expr;
 
-        public Block(List<Expr> exprs) {
-            this.exprs = exprs;
+        public Block(Expr expr) {
+            this.expr = expr;
         }
 
         @Override
@@ -206,9 +206,11 @@ public abstract class Expr {
 
     public static class Section extends Expr {
         public final int index;
+        public final Expr expr;
 
-        public Section(int index) {
+        public Section(int index, Expr expr) {
             this.index = index;
+            this.expr = expr;
         }
 
         @Override

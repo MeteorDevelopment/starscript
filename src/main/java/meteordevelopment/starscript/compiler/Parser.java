@@ -48,7 +48,7 @@ public class Parser {
 
             int index = Integer.parseInt(previous.lexeme);
             if (index > 255) error("Section index cannot be larger than 255.");
-            return new Expr.Section(index);
+            return new Expr.Section(index, expression());
         }
 
         return expression();
@@ -64,9 +64,9 @@ public class Parser {
         Expr expr = and();
 
         if (match(Token.QuestionMark)) {
-            Expr trueExpr = and();
+            Expr trueExpr = statement();
             consume(Token.Colon, "Expected ':' after first part of condition.");
-            Expr falseExpr = and();
+            Expr falseExpr = statement();
             expr = new Expr.Conditional(expr, trueExpr, falseExpr);
         }
 
@@ -193,23 +193,17 @@ public class Parser {
         if (match(Token.Identifier)) return new Expr.Variable(previous.lexeme);
 
         if (match(Token.LeftParen)) {
-            Expr expr = expression();
+            Expr expr = statement();
             consume(Token.RightParen, "Expected ')' after expression.");
             return new Expr.Group(expr);
         }
 
-        if (match(Token.LeftBrace)) {
+        if (expressionDepth == 0 && match(Token.LeftBrace)) {
             expressionDepth++;
-            List<Expr> exprs = new ArrayList<>();
-
-            do {
-                exprs.add(statement());
-            } while (match(Token.Comma));
-
+            Expr expr = statement();
             consume(Token.RightBrace, "Expected '}' after expression.");
-
             expressionDepth--;
-            return new Expr.Block(exprs);
+            return new Expr.Block(expr);
         }
 
         error("Expected expression.");

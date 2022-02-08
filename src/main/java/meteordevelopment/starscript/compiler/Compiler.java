@@ -14,7 +14,6 @@ public class Compiler implements Expr.Visitor {
     private boolean variableAppend;
     private boolean getAppend;
     private boolean callAppend;
-    private boolean section;
 
     private Compiler() {}
 
@@ -54,26 +53,19 @@ public class Compiler implements Expr.Visitor {
     public void visitBlock(Expr.Block expr) {
         blockDepth++;
 
-        for (Expr expr2 : expr.exprs) {
-            if (blockDepth == 1) {
-                if (expr2 instanceof Expr.String) constantAppend = true;
-                else if (expr2 instanceof Expr.Variable) variableAppend = true;
-                else if (expr2 instanceof Expr.Get) getAppend = true;
-                else if (expr2 instanceof Expr.Call) callAppend = true;
-            }
+        if (expr.expr instanceof Expr.String) constantAppend = true;
+        else if (expr.expr instanceof Expr.Variable) variableAppend = true;
+        else if (expr.expr instanceof Expr.Get) getAppend = true;
+        else if (expr.expr instanceof Expr.Call) callAppend = true;
 
-            section = false;
-            compile(expr2);
+        compile(expr.expr);
 
-            if (blockDepth == 1) {
-                if (!constantAppend && !variableAppend && !getAppend && !callAppend && !section) script.write(Instruction.Append);
-                else {
-                    constantAppend = false;
-                    variableAppend = false;
-                    getAppend = false;
-                    callAppend = false;
-                }
-            }
+        if (!constantAppend && !variableAppend && !getAppend && !callAppend) script.write(Instruction.Append);
+        else {
+            constantAppend = false;
+            variableAppend = false;
+            getAppend = false;
+            callAppend = false;
         }
 
         blockDepth--;
@@ -172,12 +164,12 @@ public class Compiler implements Expr.Visitor {
     @Override
     public void visitSection(Expr.Section expr) {
         script.write(Instruction.Section, expr.index);
-        section = true;
+        compile(expr.expr);
     }
 
     // Helpers
 
     private void compile(Expr expr) {
-        expr.accept(this);
+        if (expr != null) expr.accept(this);
     }
 }
