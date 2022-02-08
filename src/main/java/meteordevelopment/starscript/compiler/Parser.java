@@ -57,7 +57,20 @@ public class Parser {
     // Expressions
 
     private Expr expression() {
-        return and();
+        return conditional();
+    }
+
+    private Expr conditional() {
+        Expr expr = and();
+
+        if (match(Token.QuestionMark)) {
+            Expr trueExpr = and();
+            consume(Token.Colon, "Expected ':' after first part of condition.");
+            Expr falseExpr = and();
+            expr = new Expr.Conditional(expr, trueExpr, falseExpr);
+        }
+
+        return expr;
     }
 
     private Expr and() {
@@ -137,20 +150,7 @@ public class Parser {
             return new Expr.Unary(op, right);
         }
 
-        return conditional();
-    }
-
-    private Expr conditional() {
-        Expr expr = call();
-
-        if (match(Token.QuestionMark)) {
-            Expr trueExpr = call();
-            consume(Token.Colon, "Expected ':' after first part of condition.");
-            Expr falseExpr = call();
-            expr = new Expr.Conditional(expr, trueExpr, falseExpr);
-        }
-
-        return expr;
+        return call();
     }
 
     private Expr call() {
