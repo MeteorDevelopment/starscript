@@ -27,7 +27,7 @@ repositories {
 }
 
 dependencies {
-    implementation "meteordevelopment:starscript:0.1.5"
+    implementation "meteordevelopment:starscript:0.1.9"
 }
 ```
 
