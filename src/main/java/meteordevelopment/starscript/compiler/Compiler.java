@@ -10,9 +10,11 @@ public class Compiler implements Expr.Visitor {
 
     private int blockDepth;
 
+    private boolean constantAppend;
     private boolean variableAppend;
     private boolean getAppend;
     private boolean callAppend;
+    private boolean section;
 
     private Compiler() {}
 
@@ -35,7 +37,7 @@ public class Compiler implements Expr.Visitor {
 
     @Override
     public void visitString(Expr.String expr) {
-        script.write(blockDepth > 0 ? Instruction.Constant : Instruction.ConstantAppend, Value.string(expr.string));
+        script.write((blockDepth == 0 || constantAppend) ? Instruction.ConstantAppend : Instruction.Constant, Value.string(expr.string));
     }
 
     @Override
@@ -52,20 +54,25 @@ public class Compiler implements Expr.Visitor {
     public void visitBlock(Expr.Block expr) {
         blockDepth++;
 
-        if (blockDepth == 1) {
-            if (expr.expr instanceof Expr.Variable) variableAppend = true;
-            else if (expr.expr instanceof Expr.Get) getAppend = true;
-            else if (expr.expr instanceof Expr.Call) callAppend = true;
-        }
+        for (Expr expr2 : expr.exprs) {
+            if (blockDepth == 1) {
+                if (expr2 instanceof Expr.String) constantAppend = true;
+                else if (expr2 instanceof Expr.Variable) variableAppend = true;
+                else if (expr2 instanceof Expr.Get) getAppend = true;
+                else if (expr2 instanceof Expr.Call) callAppend = true;
+            }
 
-        compile(expr.expr);
+            section = false;
+            compile(expr2);
 
-        if (blockDepth == 1) {
-            if (!variableAppend && !getAppend && !callAppend) script.write(Instruction.Append);
-            else {
-                variableAppend = false;
-                getAppend = false;
-                callAppend = false;
+            if (blockDepth == 1) {
+                if (!constantAppend && !variableAppend && !getAppend && !callAppend && !section) script.write(Instruction.Append);
+                else {
+                    constantAppend = false;
+                    variableAppend = false;
+                    getAppend = false;
+                    callAppend = false;
+                }
             }
         }
 
@@ -165,6 +172,7 @@ public class Compiler implements Expr.Visitor {
     @Override
     public void visitSection(Expr.Section expr) {
         script.write(Instruction.Section, expr.index);
+        section = true;
     }
 
     // Helpers

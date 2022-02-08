@@ -70,10 +70,10 @@ public abstract class Expr {
     }
 
     public static class Block extends Expr {
-        public final Expr expr;
+        public final List<Expr> exprs;
 
-        public Block(Expr expr) {
-            this.expr = expr;
+        public Block(List<Expr> exprs) {
+            this.exprs = exprs;
         }
 
         @Override

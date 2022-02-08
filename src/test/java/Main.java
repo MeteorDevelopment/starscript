@@ -7,7 +7,7 @@ import meteordevelopment.starscript.value.ValueMap;
 
 public class Main {
     public static void main(String[] args) {
-        String source = "Name: #1{player.name}";
+        String source = "Name: #1{player.name, #0, \", HI\"}";
 
         Parser.Result result = Parser.parse(source);
         Script script = Compiler.compile(result);

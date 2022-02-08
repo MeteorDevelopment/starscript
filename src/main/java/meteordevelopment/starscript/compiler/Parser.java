@@ -25,7 +25,7 @@ public class Parser {
 
         while (!isAtEnd()) {
             try {
-                result.exprs.add(expression());
+                result.exprs.add(statement());
             } catch (ParseException e) {
                 result.errors.add(e.error);
                 synchronize();
@@ -38,6 +38,20 @@ public class Parser {
     /** Parses starscript code and returns {@link Result}. */
     public static Result parse(String source) {
         return new Parser(source).parse_();
+    }
+
+    // Statements
+
+    private Expr statement() {
+        if (match(Token.Section)) {
+            if (previous.lexeme.isEmpty()) error("Expected section index.");
+
+            int index = Integer.parseInt(previous.lexeme);
+            if (index > 255) error("Section index cannot be larger than 255.");
+            return new Expr.Section(index);
+        }
+
+        return expression();
     }
 
     // Expressions
@@ -178,14 +192,6 @@ public class Parser {
         if (match(Token.Number)) return new Expr.Number(Double.parseDouble(previous.lexeme));
         if (match(Token.Identifier)) return new Expr.Variable(previous.lexeme);
 
-        if (match(Token.Section)) {
-            if (previous.lexeme.isEmpty()) error("Expected section index.");
-
-            int index = Integer.parseInt(previous.lexeme);
-            if (index > 255) error("Section index cannot be larger than 255.");
-            return new Expr.Section(index);
-        }
-
         if (match(Token.LeftParen)) {
             Expr expr = expression();
             consume(Token.RightParen, "Expected ')' after expression.");
@@ -193,11 +199,17 @@ public class Parser {
         }
 
         if (match(Token.LeftBrace)) {
-            Expr expr = expression();
             expressionDepth++;
+            List<Expr> exprs = new ArrayList<>();
+
+            do {
+                exprs.add(statement());
+            } while (match(Token.Comma));
+
             consume(Token.RightBrace, "Expected '}' after expression.");
+
             expressionDepth--;
-            return new Expr.Block(expr);
+            return new Expr.Block(exprs);
         }
 
         error("Expected expression.");

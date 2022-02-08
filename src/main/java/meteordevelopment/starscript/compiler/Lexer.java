@@ -65,6 +65,11 @@ public class Lexer {
                     case '{':  expressionDepth++; createToken(Token.LeftBrace); break;
                     case '}':  expressionDepth--; createToken(Token.RightBrace); break;
 
+                    case '#':
+                        while (isDigit(peek())) advance();
+                        createToken(Token.Section, source.substring(start + 1, current));
+                        break;
+
                     default:   unexpected();
                 }
             }

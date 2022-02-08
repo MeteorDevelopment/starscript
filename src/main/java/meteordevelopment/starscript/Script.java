@@ -90,6 +90,7 @@ public class Script {
                 case Jump:
                 case JumpIfTrue:
                 case JumpIfFalse:    i += 2; System.out.format("%3d -> %d", i - 2, i + 1 + ((code[i - 1] << 8) | code[i])); break;
+                case Section:        i++; System.out.format("%3d", code[i]); break;
             }
 
             System.out.println();
