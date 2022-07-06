@@ -38,8 +38,8 @@ public class Benchmark {
 
         Starscript ss = new Starscript();
         StandardLib.init(ss);
-        ss.set("name", Value.string("MineGame159"));
-        ss.set("fps", Value.number(59.68223));
+        ss.set("name", "MineGame159");
+        ss.set("fps", 59.68223);
 
         for (int i = 0; i < WARMUP; i++) ss.run(script, sb);
 

@@ -27,7 +27,7 @@ repositories {
 }
 
 dependencies {
-    implementation "meteordevelopment:starscript:0.1.9"
+    implementation "meteordevelopment:starscript:0.2.0"
 }
 ```
 
@@ -49,7 +49,7 @@ Script script = Compiler.compile(result);
 Starscript ss = new Starscript();
 StandardLib.init(ss); // Adds a few default functions, not required
 
-ss.set("name", Value.string("MineGame159"));
+ss.set("name", "MineGame159");
 // ss.set("name", () -> Value.string("MineGame159"));
 
 // Run

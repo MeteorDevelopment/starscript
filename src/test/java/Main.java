@@ -24,9 +24,9 @@ public class Main {
         StandardLib.init(ss);
 
         ValueMap player = new ValueMap();
-        player.set("name", Value.string("MineGame159"));
-        player.set("age", Value.function((ss1, agrCount) -> Value.number(5)));
-        ss.set("player", Value.map(player));
+        player.set("name", "MineGame159");
+        player.set("age", (ss1, agrCount) -> Value.number(5));
+        ss.set("player", player);
 
         System.out.println("Input: " + source);
         System.out.println("Output: " + ss.run(script));
