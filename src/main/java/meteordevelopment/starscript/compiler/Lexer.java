@@ -11,7 +11,7 @@ public class Lexer {
     public char ch;
 
     private final String source;
-    private int start, current;
+    public int start, current;
     private int expressionDepth;
 
     public Lexer(String source) {

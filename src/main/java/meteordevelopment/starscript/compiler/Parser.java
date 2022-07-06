@@ -44,11 +44,16 @@ public class Parser {
 
     private Expr statement() {
         if (match(Token.Section)) {
-            if (previous.lexeme.isEmpty()) error("Expected section index.");
+            if (previous.lexeme.isEmpty()) error("Expected section index.", null);
+
+            int start = previous.start;
 
             int index = Integer.parseInt(previous.lexeme);
-            if (index > 255) error("Section index cannot be larger than 255.");
-            return new Expr.Section(index, expression());
+            Expr expr = expression();
+            expr = new Expr.Section(start, previous.end, index, expr);
+
+            if (index > 255) error("Section index cannot be larger than 255.", expr);
+            return expr;
         }
 
         return expression();
@@ -61,13 +66,15 @@ public class Parser {
     }
 
     private Expr conditional() {
+        int start = previous.start;
         Expr expr = and();
 
         if (match(Token.QuestionMark)) {
+
             Expr trueExpr = statement();
-            consume(Token.Colon, "Expected ':' after first part of condition.");
+            consume(Token.Colon, "Expected ':' after first part of condition.", expr);
             Expr falseExpr = statement();
-            expr = new Expr.Conditional(expr, trueExpr, falseExpr);
+            expr = new Expr.Conditional(start, previous.end, expr, trueExpr, falseExpr);
         }
 
         return expr;
@@ -77,8 +84,10 @@ public class Parser {
         Expr expr = or();
 
         while (match(Token.And)) {
+            int start = previous.start;
+
             Expr right = or();
-            expr = new Expr.Logical(expr, Token.And, right);
+            expr = new Expr.Logical(start, previous.end, expr, Token.And, right);
         }
 
         return expr;
@@ -88,56 +97,62 @@ public class Parser {
         Expr expr = equality();
 
         while (match(Token.Or)) {
+            int start = previous.start;
+
             Expr right = equality();
-            expr = new Expr.Logical(expr, Token.Or, right);
+            expr = new Expr.Logical(start, previous.end, expr, Token.Or, right);
         }
 
         return expr;
     }
 
     private Expr equality() {
+        int start = previous.start;
         Expr expr = comparison();
 
         while (match(Token.EqualEqual, Token.BangEqual)) {
             Token op = previous.token;
             Expr right = comparison();
-            expr = new Expr.Binary(expr, op, right);
+            expr = new Expr.Binary(start, previous.end, expr, op, right);
         }
 
         return expr;
     }
 
     private Expr comparison() {
+        int start = previous.start;
         Expr expr = term();
 
         while (match(Token.Greater, Token.GreaterEqual, Token.Less, Token.LessEqual)) {
             Token op = previous.token;
             Expr right = term();
-            expr = new Expr.Binary(expr, op, right);
+            expr = new Expr.Binary(start, previous.end, expr, op, right);
         }
 
         return expr;
     }
 
     private Expr term() {
+        int start = previous.start;
         Expr expr = factor();
 
         while (match(Token.Plus, Token.Minus)) {
             Token op = previous.token;
             Expr right = factor();
-            expr = new Expr.Binary(expr, op, right);
+            expr = new Expr.Binary(start, previous.end, expr, op, right);
         }
 
         return expr;
     }
 
     private Expr factor() {
+        int start = previous.start;
         Expr expr = unary();
 
         while (match(Token.Star, Token.Slash, Token.Percentage, Token.UpArrow)) {
             Token op = previous.token;
             Expr right = unary();
-            expr = new Expr.Binary(expr, op, right);
+            expr = new Expr.Binary(start, previous.end, expr, op, right);
         }
 
         return expr;
@@ -145,9 +160,11 @@ public class Parser {
 
     private Expr unary() {
         if (match(Token.Bang, Token.Minus)) {
+            int start = previous.start;
+
             Token op = previous.token;
             Expr right = unary();
-            return new Expr.Unary(op, right);
+            return new Expr.Unary(start, previous.end, op, right);
         }
 
         return call();
@@ -155,14 +172,19 @@ public class Parser {
 
     private Expr call() {
         Expr expr = primary();
+        int start = previous.start;
 
         while (true) {
             if (match(Token.LeftParen)) {
                 expr = finishCall(expr);
             }
             else if (match(Token.Dot)) {
-                TokenData name = consume(Token.Identifier, "Expected field name after '.'.");
-                expr = new Expr.Get(expr, name.lexeme);
+                if (!check(Token.Identifier)) {
+                    expr = new Expr.Get(start, current.end, expr, "");
+                }
+
+                TokenData name = consume(Token.Identifier, "Expected field name after '.'.", expr);
+                expr = new Expr.Get(start, previous.end, expr, name.lexeme);
             }
             else {
                 break;
@@ -181,32 +203,49 @@ public class Parser {
             } while (match(Token.Comma));
         }
 
-        consume(Token.RightParen, "Expected ')' after function arguments.");
-        return new Expr.Call(callee, args);
+        Expr expr = new Expr.Call(callee.start, previous.end, callee, args);
+        consume(Token.RightParen, "Expected ')' after function arguments.", expr);
+        return expr;
     }
 
     private Expr primary() {
-        if (match(Token.Null)) return new Expr.Null();
-        if (match(Token.String)) return new Expr.String(previous.lexeme);
-        if (match(Token.True, Token.False)) return new Expr.Bool(previous.lexeme.equals("true"));
-        if (match(Token.Number)) return new Expr.Number(Double.parseDouble(previous.lexeme));
-        if (match(Token.Identifier)) return new Expr.Variable(previous.lexeme);
+        if (match(Token.Null)) return new Expr.Null(previous.start, previous.end);
+        if (match(Token.String)) return new Expr.String(previous.start, previous.end, previous.lexeme);
+        if (match(Token.True, Token.False)) return new Expr.Bool(previous.start, previous.end, previous.lexeme.equals("true"));
+        if (match(Token.Number)) return new Expr.Number(previous.start, previous.end, Double.parseDouble(previous.lexeme));
+        if (match(Token.Identifier)) return new Expr.Variable(previous.start, previous.end, previous.lexeme);
 
         if (match(Token.LeftParen)) {
+            int start = previous.start;
+
             Expr expr = statement();
-            consume(Token.RightParen, "Expected ')' after expression.");
-            return new Expr.Group(expr);
+            expr = new Expr.Group(start, previous.end, expr);
+
+            consume(Token.RightParen, "Expected ')' after expression.", expr);
+            return expr;
         }
 
         if (expressionDepth == 0 && match(Token.LeftBrace)) {
+            int start = previous.start;
+
             expressionDepth++;
-            Expr expr = statement();
-            consume(Token.RightBrace, "Expected '}' after expression.");
+            Expr expr;
+
+            try {
+                expr = statement();
+            }
+            catch (ParseException e) {
+                if (e.error.expr == null) e.error.expr = new Expr.Block(start, previous.end, null);
+                throw e;
+            }
+
+            expr = new Expr.Block(start, previous.end, expr);
+            consume(Token.RightBrace, "Expected '}' after expression.", expr);
             expressionDepth--;
-            return new Expr.Block(expr);
+            return expr;
         }
 
-        error("Expected expression.");
+        error("Expected expression.", null);
         return null;
     }
 
@@ -223,13 +262,13 @@ public class Parser {
         }
     }
 
-    private void error(String message) {
-        throw new ParseException(new Error(current.line, current.character, current.ch, message));
+    private void error(String message, Expr expr) {
+        throw new ParseException(new Error(current.line, current.character, current.ch, message, expr));
     }
 
-    private TokenData consume(Token token, String message) {
+    private TokenData consume(Token token, String message, Expr expr) {
         if (check(token)) return advance();
-        error(message);
+        error(message, expr);
         return null;
     }
 
@@ -253,7 +292,7 @@ public class Parser {
         previous.set(current);
 
         lexer.next();
-        current.set(lexer.token, lexer.lexeme, lexer.line, lexer.character, lexer.ch);
+        current.set(lexer.token, lexer.lexeme, lexer.start, lexer.current, lexer.line, lexer.character, lexer.ch);
 
         return previous;
     }
@@ -267,19 +306,21 @@ public class Parser {
     private static class TokenData {
         public Token token;
         public String lexeme;
-        public int line, character;
+        public int start, end, line, character;
         public char ch;
 
-        public void set(Token token, String lexeme, int line, int character, char ch) {
+        public void set(Token token, String lexeme, int start, int end, int line, int character, char ch) {
             this.token = token;
             this.lexeme = lexeme;
+            this.start = start;
+            this.end = end;
             this.line = line;
             this.character = character;
             this.ch = ch;
         }
 
         public void set(TokenData data) {
-            set(data.token, data.lexeme, data.line, data.character, data.ch);
+            set(data.token, data.lexeme, data.start, data.end, data.line, data.character, data.ch);
         }
 
         @Override

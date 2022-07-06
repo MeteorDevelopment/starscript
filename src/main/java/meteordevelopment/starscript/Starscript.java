@@ -1,28 +1,19 @@
 package meteordevelopment.starscript;
 
-import meteordevelopment.starscript.utils.Stack;
-import meteordevelopment.starscript.utils.StarscriptError;
+import meteordevelopment.starscript.compiler.Expr;
+import meteordevelopment.starscript.compiler.Parser;
+import meteordevelopment.starscript.utils.*;
+import meteordevelopment.starscript.utils.Error;
 import meteordevelopment.starscript.value.Value;
+import meteordevelopment.starscript.value.ValueMap;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Supplier;
 
 /** A VM (virtual machine) that can run compiled starscript code, {@link Script}. */
 public class Starscript {
-    private final Map<String, Supplier<Value>> globals = new HashMap<>();
+    private final ValueMap globals = new ValueMap();
 
     private final Stack<Value> stack = new Stack<>();
-
-    /** Sets a variable supplier for the provided name. */
-    public void set(String name, Supplier<Value> supplier) {
-        globals.put(name, supplier);
-    }
-
-    /** Sets a variable supplier that always returns the same value for the provided name. */
-    public void set(String name, Value value) {
-        set(name, () -> value);
-    }
 
     /** Runs the script and fills the provided {@link StringBuilder}. Throws {@link StarscriptError} if a runtime error happens. */
     public Section run(Script script, StringBuilder sb) {
@@ -142,5 +133,122 @@ public class Starscript {
     /** Throws a {@link StarscriptError}. */
     public void error(String format, Object... args) {
         throw new StarscriptError(String.format(format, args));
+    }
+
+    // Globals
+
+    /** Sets a variable supplier for the provided name. */
+    public ValueMap set(String name, Supplier<Value> supplier) {
+        return globals.set(name, supplier);
+    }
+
+    /** Sets a variable supplier that always returns the same value for the provided name. */
+    public ValueMap set(String name, Value value) {
+        return globals.set(name, value);
+    }
+
+    /** Sets a boolean variable supplier that always returns the same value for the provided name. */
+    public ValueMap set(String name, boolean bool) {
+        return globals.set(name, bool);
+    }
+
+    /** Sets a number variable supplier that always returns the same value for the provided name. */
+    public ValueMap set(String name, double number) {
+        return globals.set(name, number);
+    }
+
+    /** Sets a string variable supplier that always returns the same value for the provided name. */
+    public ValueMap set(String name, String string) {
+        return globals.set(name, string);
+    }
+
+    /** Sets a function variable supplier that always returns the same value for the provided name. */
+    public ValueMap set(String name, SFunction function) {
+        return globals.set(name, function);
+    }
+
+    /** Sets a map variable supplier that always returns the same value for the provided name. */
+    public ValueMap set(String name, ValueMap map) {
+        return globals.set(name, map);
+    }
+
+    /** Returns the underlying {@link ValueMap} for global variables. */
+    public ValueMap getGlobals() {
+        return globals;
+    }
+
+    // Completions
+
+    /** Calls the provided callback for every completion that is able to be resolved from global variables. */
+    public void getCompletions(String source, int position, CompletionCallback callback) {
+        Parser.Result result = Parser.parse(source);
+
+        for (Expr expr : result.exprs) {
+            completionsExpr(source, position, expr, callback);
+        }
+
+        for (Error error : result.errors) {
+            if (error.expr != null) completionsExpr(source, position, error.expr, callback);
+        }
+    }
+
+    private void completionsExpr(String source, int position, Expr expr, CompletionCallback callback) {
+        if (position < expr.start || (position > expr.end && position != source.length())) return;
+
+        if (expr instanceof Expr.Variable) {
+            Expr.Variable var = (Expr.Variable) expr;
+            String start = source.substring(var.start, position);
+
+            for (String key : globals.keys()) {
+                if (!key.startsWith("_") && key.startsWith(start)) callback.onCompletion(key, globals.get(key).get().isFunction());
+            }
+        }
+        else if (expr instanceof Expr.Get) {
+            Expr.Get get = (Expr.Get) expr;
+
+            if (position >= get.end - get.name.length()) {
+                Value value = resolveExpr(get.object);
+
+                if (value != null && value.isMap()) {
+                    String start = source.substring(get.object.end + 1, position);
+
+                    for (String key : value.getMap().keys()) {
+                        if (!key.startsWith("_") && key.startsWith(start)) callback.onCompletion(key, value.getMap().get(key).get().isFunction());
+                    }
+                }
+            }
+            else {
+                expr.forEach(child -> completionsExpr(source, position, child, callback));
+            }
+        }
+        else if (expr instanceof Expr.Block) {
+            if (((Expr.Block) expr).expr == null) {
+                for (String key : globals.keys()) {
+                    if (!key.startsWith("_")) callback.onCompletion(key, globals.get(key).get().isFunction());
+                }
+            }
+            else {
+                expr.forEach(child -> completionsExpr(source, position, child, callback));
+            }
+        }
+        else {
+            expr.forEach(child -> completionsExpr(source, position, child, callback));
+        }
+    }
+
+    private Value resolveExpr(Expr expr) {
+        if (expr instanceof Expr.Variable) {
+            Supplier<Value> supplier = globals.get(((Expr.Variable) expr).name);
+            return supplier != null ? supplier.get() : null;
+        }
+        else if (expr instanceof Expr.Get) {
+            Value value = resolveExpr(((Expr.Get) expr).object);
+            if (value == null || !value.isMap()) return null;
+
+            Supplier<Value> supplier = value.getMap().get(((Expr.Get) expr).name);
+            return supplier != null ? supplier.get() : null;
+        }
+
+        return null;
     }
 }
