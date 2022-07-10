@@ -79,7 +79,12 @@ public class Compiler implements Expr.Visitor {
     @Override
     public void visitBinary(Expr.Binary expr) {
         compile(expr.left);
-        compile(expr.right);
+
+        if (expr.op == Token.Plus && (expr.right instanceof Expr.String || expr.right instanceof Expr.Number)) {
+            script.write(Instruction.AddConstant, expr.right instanceof Expr.String ? Value.string(((Expr.String) expr.right).string) : Value.number(((Expr.Number) expr.right).number));
+            return;
+        }
+        else compile(expr.right);
 
         switch (expr.op) {
             case Plus:         script.write(Instruction.Add); break;

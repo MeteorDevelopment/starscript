@@ -79,6 +79,7 @@ public class Script {
             System.out.format("%3d %-16s", i, insn);
 
             switch (insn) {
+                case AddConstant:
                 case Variable:
                 case VariableAppend:
                 case Get:

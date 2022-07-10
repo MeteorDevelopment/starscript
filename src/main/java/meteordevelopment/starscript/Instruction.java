@@ -14,6 +14,8 @@ public enum Instruction {
     Modulo,
     Power,
 
+    AddConstant,
+
     Pop,
     Not,
     Negate,
