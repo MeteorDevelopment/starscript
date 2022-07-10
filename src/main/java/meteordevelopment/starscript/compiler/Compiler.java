@@ -121,10 +121,16 @@ public class Compiler implements Expr.Visitor {
         boolean prevGetAppend = getAppend;
         getAppend = false;
 
-        compile(expr.object);
+        boolean variableGet = expr.object instanceof Expr.Variable;
+        if (!variableGet) compile(expr.object);
 
         getAppend = prevGetAppend;
-        script.write(getAppend ? Instruction.GetAppend : Instruction.Get, Value.string(expr.name));
+
+        if (variableGet) {
+            script.write(getAppend ? Instruction.VariableGetAppend : Instruction.VariableGet, Value.string(((Expr.Variable) expr.object).name));
+            script.writeConstant(Value.string(expr.name));
+        }
+        else script.write(getAppend ? Instruction.GetAppend : Instruction.Get, Value.string(expr.name));
     }
 
     @Override

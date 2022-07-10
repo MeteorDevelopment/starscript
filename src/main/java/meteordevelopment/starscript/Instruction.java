@@ -43,6 +43,9 @@ public enum Instruction {
     GetAppend,
     CallAppend,
 
+    VariableGet,
+    VariableGetAppend,
+
     End;
 
     private static final Instruction[] values = values();

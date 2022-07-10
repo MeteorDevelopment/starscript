@@ -35,6 +35,12 @@ public class Script {
 
     /** Writes instruction with an additional constant value to this script. */
     public void write(Instruction insn, Value constant) {
+        write(insn.ordinal());
+        writeConstant(constant);
+    }
+
+    /** Writes constant value to this script. */
+    public void writeConstant(Value constant) {
         int constantI = -1;
 
         for (int i = 0; i < constants.size(); i++) {
@@ -49,7 +55,6 @@ public class Script {
             constants.add(constant);
         }
 
-        write(insn.ordinal());
         write(constantI);
     }
 
@@ -76,7 +81,7 @@ public class Script {
     public void decompile() {
         for (int i = 0; i < size; i++) {
             Instruction insn = Instruction.valueOf(code[i]);
-            System.out.format("%3d %-16s", i, insn);
+            System.out.format("%3d %-18s", i, insn);
 
             switch (insn) {
                 case AddConstant:
@@ -85,13 +90,15 @@ public class Script {
                 case Get:
                 case GetAppend:
                 case Constant:
-                case ConstantAppend: i++; System.out.format("%3d '%s'", code[i], constants.get(code[i])); break;
+                case ConstantAppend:    i++; System.out.format("%3d '%s'", code[i], constants.get(code[i])); break;
                 case Call:
-                case CallAppend:     i++; System.out.format("%3d %s", code[i], code[i] == 1 ? "argument" : "arguments"); break;
+                case CallAppend:        i++; System.out.format("%3d %s", code[i], code[i] == 1 ? "argument" : "arguments"); break;
                 case Jump:
                 case JumpIfTrue:
-                case JumpIfFalse:    i += 2; System.out.format("%3d -> %d", i - 2, i + 1 + (((code[i - 1] << 8) & 0xFF) | (code[i] & 0xFF))); break;
-                case Section:        i++; System.out.format("%3d", code[i]); break;
+                case JumpIfFalse:       i += 2; System.out.format("%3d -> %d", i - 2, i + 1 + (((code[i - 1] << 8) & 0xFF) | (code[i] & 0xFF))); break;
+                case Section:           i++; System.out.format("%3d", code[i]); break;
+                case VariableGet:
+                case VariableGetAppend: i += 2; System.out.format("%3d.%-3d '%s.%s'", code[i - 1], code[i], constants.get(code[i - 1]), constants.get(code[i])); break;
             }
 
             System.out.println();
