@@ -16,22 +16,23 @@ public class StandardLib {
     /** Adds the functions and variables to the provided {@link Starscript} instance. */
     public static void init(Starscript ss) {
         // Variables
-        ss.set("PI", Value.number(Math.PI));
+        ss.set("PI", Math.PI);
         ss.set("time", () -> Value.string(timeFormat.format(new Date())));
         ss.set("date", () -> Value.string(dateFormat.format(new Date())));
 
         // Numbers
-        ss.set("round", Value.function(StandardLib::round));
-        ss.set("floor", Value.function(StandardLib::floor));
-        ss.set("ceil", Value.function(StandardLib::ceil));
-        ss.set("abs", Value.function(StandardLib::abs));
-        ss.set("random", Value.function(StandardLib::random));
+        ss.set("round", StandardLib::round);
+        ss.set("floor", StandardLib::floor);
+        ss.set("ceil", StandardLib::ceil);
+        ss.set("abs", StandardLib::abs);
+        ss.set("random", StandardLib::random);
 
         // Strings
-        ss.set("toUpper", Value.function(StandardLib::toUpper));
-        ss.set("toLower", Value.function(StandardLib::toLower));
-        ss.set("contains", Value.function(StandardLib::contains));
-        ss.set("replace", Value.function(StandardLib::replace));
+        ss.set("string", StandardLib::string);
+        ss.set("toUpper", StandardLib::toUpper);
+        ss.set("toLower", StandardLib::toLower);
+        ss.set("contains", StandardLib::contains);
+        ss.set("replace", StandardLib::replace);
     }
 
     // Numbers
@@ -86,6 +87,11 @@ public class StandardLib {
     }
 
     // Strings
+
+    private static Value string(Starscript ss, int argCount) {
+        if (argCount != 1) ss.error("string() requires 1 argument, got %d.", argCount);
+        return Value.string(ss.pop().toString());
+    }
 
     public static Value toUpper(Starscript ss, int argCount) {
         if (argCount != 1) ss.error("toUpper() requires 1 argument, got %d.", argCount);
