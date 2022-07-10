@@ -66,8 +66,8 @@ public class Script {
     public void patchJump(int offset) {
         int jump = size - offset - 2;
 
-        code[offset] = (byte) ((jump >> 8) & 0xff);
-        code[offset + 1] = (byte) (jump & 0xff);
+        code[offset] = (byte) ((jump >> 8) & 0xFF);
+        code[offset + 1] = (byte) (jump & 0xFF);
     }
 
     // Decompilation
@@ -89,7 +89,7 @@ public class Script {
                 case CallAppend:     i++; System.out.format("%3d %s", code[i], code[i] == 1 ? "argument" : "arguments"); break;
                 case Jump:
                 case JumpIfTrue:
-                case JumpIfFalse:    i += 2; System.out.format("%3d -> %d", i - 2, i + 1 + ((code[i - 1] << 8) | code[i])); break;
+                case JumpIfFalse:    i += 2; System.out.format("%3d -> %d", i - 2, i + 1 + (((code[i - 1] << 8) & 0xFF) | (code[i] & 0xFF))); break;
                 case Section:        i++; System.out.format("%3d", code[i]); break;
             }
 
