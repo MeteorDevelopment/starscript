@@ -22,6 +22,7 @@ public class StandardLib {
 
         // Numbers
         ss.set("round", StandardLib::round);
+        ss.set("roundToString", StandardLib::roundToString);
         ss.set("floor", StandardLib::floor);
         ss.set("ceil", StandardLib::ceil);
         ss.set("abs", StandardLib::abs);
@@ -48,6 +49,24 @@ public class StandardLib {
 
             double x = Math.pow(10, (int) b);
             return Value.number(Math.round(a * x) / x);
+        }
+        else {
+            ss.error("round() requires 1 or 2 arguments, got %d.", argCount);
+            return null;
+        }
+    }
+
+    public static Value roundToString(Starscript ss, int argCount) {
+        if (argCount == 1) {
+            double a = ss.popNumber("Argument to round() needs to be a number.");
+            return Value.string(Double.toString(Math.round(a)));
+        }
+        else if (argCount == 2) {
+            double b = ss.popNumber("Second argument to round() needs to be a number.");
+            double a = ss.popNumber("First argument to round() needs to be a number.");
+
+            double x = Math.pow(10, (int) b);
+            return Value.string(Double.toString(Math.round(a * x) / x));
         }
         else {
             ss.error("round() requires 1 or 2 arguments, got %d.", argCount);
