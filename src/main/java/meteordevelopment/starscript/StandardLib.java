@@ -34,6 +34,7 @@ public class StandardLib {
         ss.set("toLower", StandardLib::toLower);
         ss.set("contains", StandardLib::contains);
         ss.set("replace", StandardLib::replace);
+        ss.set("pad", StandardLib::pad);
     }
 
     // Numbers
@@ -141,5 +142,28 @@ public class StandardLib {
         String string = ss.popString("First argument to replace() needs to be a string.");
 
         return Value.string(string.replace(from, to));
+    }
+
+    public static Value pad(Starscript ss, int argCount) {
+        if (argCount != 2) ss.error("pad() requires 2 arguments, got %d.", argCount);
+
+        int width = (int) ss.popNumber("Second argument to pad() needs to be a number.");
+        String text = ss.pop().toString();
+
+        if (text.length() >= Math.abs(width)) return Value.string(text);
+
+        char[] padded = new char[Math.max(text.length(), Math.abs(width))];
+
+        if (width >= 0) {
+            int padLength = width - text.length();
+            for (int i = 0; i < padLength; i++) padded[i] = ' ';
+            for (int i = 0; i < text.length(); i++) padded[padLength + i] = text.charAt(i);
+        }
+        else {
+            for (int i = 0; i < text.length(); i++) padded[i] = text.charAt(i);
+            for (int i = 0; i < Math.abs(width) - text.length(); i++) padded[text.length() + i] = ' ';
+        }
+
+        return Value.string(new String(padded));
     }
 }
