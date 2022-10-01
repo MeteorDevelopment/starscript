@@ -128,7 +128,7 @@ public class Starscript {
     public boolean popBool(String errorMsg) {
         Value a = pop();
         if (!a.isBool()) error(errorMsg);
-        return a.isBool();
+        return a.getBool();
     }
 
     /** Pops a value from the stack and returns it as double. Calls {@link Starscript#error(String, Object...)} with the provided message if the value is not double. */
