@@ -350,5 +350,9 @@ public class Parser {
         public boolean hasErrors() {
             return errors.size() > 0;
         }
+
+        public void accept(Expr.Visitor visitor) {
+            for (Expr expr : exprs) expr.accept(visitor);
+        }
     }
 }

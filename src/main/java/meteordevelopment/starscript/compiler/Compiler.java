@@ -53,12 +53,12 @@ public class Compiler implements Expr.Visitor {
     public void visitBlock(Expr.Block expr) {
         blockDepth++;
 
-        if (expr.expr instanceof Expr.String) constantAppend = true;
-        else if (expr.expr instanceof Expr.Variable) variableAppend = true;
-        else if (expr.expr instanceof Expr.Get) getAppend = true;
-        else if (expr.expr instanceof Expr.Call) callAppend = true;
+        if (expr.getExpr() instanceof Expr.String) constantAppend = true;
+        else if (expr.getExpr() instanceof Expr.Variable) variableAppend = true;
+        else if (expr.getExpr() instanceof Expr.Get) getAppend = true;
+        else if (expr.getExpr() instanceof Expr.Call) callAppend = true;
 
-        compile(expr.expr);
+        compile(expr.getExpr());
 
         if (!constantAppend && !variableAppend && !getAppend && !callAppend) script.write(Instruction.Append);
         else {
@@ -73,18 +73,18 @@ public class Compiler implements Expr.Visitor {
 
     @Override
     public void visitGroup(Expr.Group expr) {
-        compile(expr.expr);
+        compile(expr.getExpr());
     }
 
     @Override
     public void visitBinary(Expr.Binary expr) {
-        compile(expr.left);
+        compile(expr.getLeft());
 
-        if (expr.op == Token.Plus && (expr.right instanceof Expr.String || expr.right instanceof Expr.Number)) {
-            script.write(Instruction.AddConstant, expr.right instanceof Expr.String ? Value.string(((Expr.String) expr.right).string) : Value.number(((Expr.Number) expr.right).number));
+        if (expr.op == Token.Plus && (expr.getRight() instanceof Expr.String || expr.getRight() instanceof Expr.Number)) {
+            script.write(Instruction.AddConstant, expr.getRight() instanceof Expr.String ? Value.string(((Expr.String) expr.getRight()).string) : Value.number(((Expr.Number) expr.getRight()).number));
             return;
         }
-        else compile(expr.right);
+        else compile(expr.getRight());
 
         switch (expr.op) {
             case Plus:         script.write(Instruction.Add); break;
@@ -105,7 +105,7 @@ public class Compiler implements Expr.Visitor {
 
     @Override
     public void visitUnary(Expr.Unary expr) {
-        compile(expr.right);
+        compile(expr.getRight());
 
         if (expr.op == Token.Bang) script.write(Instruction.Not);
         else if (expr.op == Token.Minus) script.write(Instruction.Negate);
@@ -121,13 +121,13 @@ public class Compiler implements Expr.Visitor {
         boolean prevGetAppend = getAppend;
         getAppend = false;
 
-        boolean variableGet = expr.object instanceof Expr.Variable;
-        if (!variableGet) compile(expr.object);
+        boolean variableGet = expr.getObject() instanceof Expr.Variable;
+        if (!variableGet) compile(expr.getObject());
 
         getAppend = prevGetAppend;
 
         if (variableGet) {
-            script.write(getAppend ? Instruction.VariableGetAppend : Instruction.VariableGet, Value.string(((Expr.Variable) expr.object).name));
+            script.write(getAppend ? Instruction.VariableGetAppend : Instruction.VariableGet, Value.string(((Expr.Variable) expr.getObject()).name));
             script.writeConstant(Value.string(expr.name));
         }
         else script.write(getAppend ? Instruction.GetAppend : Instruction.Get, Value.string(expr.name));
@@ -136,38 +136,38 @@ public class Compiler implements Expr.Visitor {
     @Override
     public void visitCall(Expr.Call expr) {
         boolean prevCallAppend = callAppend;
-        compile(expr.callee);
+        compile(expr.getCallee());
 
         callAppend = false;
-        for (Expr e : expr.args) compile(e);
+        for (int i = 0; i < expr.getArgCount(); i++) compile(expr.getArg(i));
 
         callAppend = prevCallAppend;
-        script.write(callAppend ? Instruction.CallAppend : Instruction.Call, expr.args.size());
+        script.write(callAppend ? Instruction.CallAppend : Instruction.Call, expr.getArgCount());
     }
 
     @Override
     public void visitLogical(Expr.Logical expr) {
-        compile(expr.left);
+        compile(expr.getLeft());
         int endJump = script.writeJump(expr.op == Token.And ? Instruction.JumpIfFalse : Instruction.JumpIfTrue);
 
         script.write(Instruction.Pop);
-        compile(expr.right);
+        compile(expr.getRight());
 
         script.patchJump(endJump);
     }
 
     @Override
     public void visitConditional(Expr.Conditional expr) {
-        compile(expr.condition);
+        compile(expr.getCondition());
         int falseJump = script.writeJump(Instruction.JumpIfFalse);
 
         script.write(Instruction.Pop);
-        compile(expr.trueExpr);
+        compile(expr.getTrueExpr());
         int endJump = script.writeJump(Instruction.Jump);
 
         script.patchJump(falseJump);
         script.write(Instruction.Pop);
-        compile(expr.falseExpr);
+        compile(expr.getFalseExpr());
 
         script.patchJump(endJump);
     }
@@ -175,7 +175,7 @@ public class Compiler implements Expr.Visitor {
     @Override
     public void visitSection(Expr.Section expr) {
         script.write(Instruction.Section, expr.index);
-        compile(expr.expr);
+        compile(expr.getExpr());
     }
 
     // Helpers

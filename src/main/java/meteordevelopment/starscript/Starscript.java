@@ -243,10 +243,10 @@ public class Starscript {
             Expr.Get get = (Expr.Get) expr;
 
             if (position >= get.end - get.name.length()) {
-                Value value = resolveExpr(get.object);
+                Value value = resolveExpr(get.getObject());
 
                 if (value != null && value.isMap()) {
-                    String start = source.substring(get.object.end + 1, position);
+                    String start = source.substring(get.getObject().end + 1, position);
 
                     for (String key : value.getMap().keys()) {
                         if (!key.startsWith("_") && key.startsWith(start)) callback.onCompletion(key, value.getMap().getRaw(key).get().isFunction());
@@ -254,21 +254,21 @@ public class Starscript {
                 }
             }
             else {
-                expr.forEach(child -> completionsExpr(source, position, child, callback));
+                for (Expr child : expr.children) completionsExpr(source, position, child, callback);
             }
         }
         else if (expr instanceof Expr.Block) {
-            if (((Expr.Block) expr).expr == null) {
+            if (((Expr.Block) expr).getExpr() == null) {
                 for (String key : globals.keys()) {
                     if (!key.startsWith("_")) callback.onCompletion(key, globals.getRaw(key).get().isFunction());
                 }
             }
             else {
-                expr.forEach(child -> completionsExpr(source, position, child, callback));
+                for (Expr child : expr.children) completionsExpr(source, position, child, callback);
             }
         }
         else {
-            expr.forEach(child -> completionsExpr(source, position, child, callback));
+            for (Expr child : expr.children) completionsExpr(source, position, child, callback);
         }
     }
 
@@ -278,7 +278,7 @@ public class Starscript {
             return supplier != null ? supplier.get() : null;
         }
         else if (expr instanceof Expr.Get) {
-            Value value = resolveExpr(((Expr.Get) expr).object);
+            Value value = resolveExpr(((Expr.Get) expr).getObject());
             if (value == null || !value.isMap()) return null;
 
             Supplier<Value> supplier = value.getMap().getRaw(((Expr.Get) expr).name);

@@ -1,10 +1,11 @@
 package meteordevelopment.starscript.compiler;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 /** Expressions that form the AST (abstract syntax tree) of parsed starscript code. */
 public abstract class Expr {
+    private static final Expr[] EMPTY_CHILDREN = new Expr[0];
+
     public interface Visitor {
         void visitNull(Null expr);
         void visitString(String expr);
@@ -24,9 +25,21 @@ public abstract class Expr {
 
     public final int start, end;
 
-    public Expr(int start, int end) {
+    public Expr parent;
+    public final Expr[] children;
+
+    public Expr(int start, int end, Expr[] children) {
         this.start = start;
         this.end = end;
+        this.children = children;
+
+        for (Expr child : this.children) {
+            child.parent = this;
+        }
+    }
+
+    public Expr(int start, int end) {
+        this(start, end, EMPTY_CHILDREN);
     }
 
     public abstract void accept(Visitor visitor);
@@ -35,7 +48,21 @@ public abstract class Expr {
         return source.substring(start, end);
     }
 
-    public void forEach(Consumer<Expr> consumer) {}
+    public void replaceChild(Expr toReplace, Expr replacement) {
+        for (int i = 0; i < children.length; i++) {
+            if (children[i] != toReplace) continue;
+
+            children[i] = replacement;
+            toReplace.parent = null;
+            replacement.parent = this;
+
+            break;
+        }
+    }
+
+    public void replace(Expr replacement) {
+        parent.replaceChild(this, replacement);
+    }
 
     public static class Null extends Expr {
         public Null(int start, int end) {
@@ -94,12 +121,8 @@ public abstract class Expr {
     }
 
     public static class Block extends Expr {
-        public final Expr expr;
-
         public Block(int start, int end, Expr expr) {
-            super(start, end);
-
-            this.expr = expr;
+            super(start, end, new Expr[] { expr });
         }
 
         @Override
@@ -107,19 +130,14 @@ public abstract class Expr {
             visitor.visitBlock(this);
         }
 
-        @Override
-        public void forEach(Consumer<Expr> consumer) {
-            if (expr != null) consumer.accept(expr);
+        public Expr getExpr() {
+            return children[0];
         }
     }
 
     public static class Group extends Expr {
-        public final Expr expr;
-
         public Group(int start, int end, Expr expr) {
-            super(start, end);
-
-            this.expr = expr;
+            super(start, end, new Expr[] { expr });
         }
 
         @Override
@@ -127,23 +145,18 @@ public abstract class Expr {
             visitor.visitGroup(this);
         }
 
-        @Override
-        public void forEach(Consumer<Expr> consumer) {
-            consumer.accept(expr);
+        public Expr getExpr() {
+            return children[0];
         }
     }
 
     public static class Binary extends Expr {
-        public final Expr left;
         public final Token op;
-        public final Expr right;
 
         public Binary(int start, int end, Expr left, Token op, Expr right) {
-            super(start, end);
+            super(start, end, new Expr[] { left, right });
 
-            this.left = left;
             this.op = op;
-            this.right = right;
         }
 
         @Override
@@ -151,22 +164,22 @@ public abstract class Expr {
             visitor.visitBinary(this);
         }
 
-        @Override
-        public void forEach(Consumer<Expr> consumer) {
-            consumer.accept(left);
-            consumer.accept(right);
+        public Expr getLeft() {
+            return children[0];
+        }
+
+        public Expr getRight() {
+            return children[1];
         }
     }
 
     public static class Unary extends Expr {
         public final Token op;
-        public final Expr right;
 
         public Unary(int start, int end, Token op, Expr right) {
-            super(start, end);
+            super(start, end, new Expr[] { right });
 
             this.op = op;
-            this.right = right;
         }
 
         @Override
@@ -174,9 +187,8 @@ public abstract class Expr {
             visitor.visitUnary(this);
         }
 
-        @Override
-        public void forEach(Consumer<Expr> consumer) {
-            consumer.accept(right);
+        public Expr getRight() {
+            return children[0];
         }
     }
 
@@ -196,13 +208,11 @@ public abstract class Expr {
     }
 
     public static class Get extends Expr {
-        public final Expr object;
         public final java.lang.String name;
 
         public Get(int start, int end, Expr object, java.lang.String name) {
-            super(start, end);
+            super(start, end, new Expr[] { object });
 
-            this.object = object;
             this.name = name;
         }
 
@@ -211,21 +221,14 @@ public abstract class Expr {
             visitor.visitGet(this);
         }
 
-        @Override
-        public void forEach(Consumer<Expr> consumer) {
-            consumer.accept(object);
+        public Expr getObject() {
+            return children[0];
         }
     }
 
     public static class Call extends Expr {
-        public final Expr callee;
-        public final List<Expr> args;
-
         public Call(int start, int end, Expr callee, List<Expr> args) {
-            super(start, end);
-
-            this.callee = callee;
-            this.args = args;
+            super(start, end, combine(callee, args));
         }
 
         @Override
@@ -233,25 +236,35 @@ public abstract class Expr {
             visitor.visitCall(this);
         }
 
-        @Override
-        public void forEach(Consumer<Expr> consumer) {
-            consumer.accept(callee);
+        public Expr getCallee() {
+            return children[0];
+        }
 
-            for (Expr arg : args) consumer.accept(arg);
+        public int getArgCount() {
+            return children.length - 1;
+        }
+
+        public Expr getArg(int i) {
+            return children[i + 1];
+        }
+
+        private static Expr[] combine(Expr callee, List<Expr> args) {
+            Expr[] exprs = new Expr[args.size() + 1];
+
+            exprs[0] = callee;
+            for (int i = 0; i < args.size(); i++) exprs[i + 1] = args.get(i);
+
+            return exprs;
         }
     }
 
     public static class Logical extends Expr {
-        public final Expr left;
         public final Token op;
-        public final Expr right;
 
         public Logical(int start, int end, Expr left, Token op, Expr right) {
-            super(start, end);
+            super(start, end, new Expr[] { left, right });
 
-            this.left = left;
             this.op = op;
-            this.right = right;
         }
 
         @Override
@@ -259,24 +272,18 @@ public abstract class Expr {
             visitor.visitLogical(this);
         }
 
-        @Override
-        public void forEach(Consumer<Expr> consumer) {
-            consumer.accept(left);
-            consumer.accept(right);
+        public Expr getLeft() {
+            return children[0];
+        }
+
+        public Expr getRight() {
+            return children[1];
         }
     }
 
     public static class Conditional extends Expr {
-        public final Expr condition;
-        public final Expr trueExpr;
-        public final Expr falseExpr;
-
         public Conditional(int start, int end, Expr condition, Expr trueExpr, Expr falseExpr) {
-            super(start, end);
-
-            this.condition = condition;
-            this.trueExpr = trueExpr;
-            this.falseExpr = falseExpr;
+            super(start, end, new Expr[] { condition, trueExpr, falseExpr });
         }
 
         @Override
@@ -284,23 +291,26 @@ public abstract class Expr {
             visitor.visitConditional(this);
         }
 
-        @Override
-        public void forEach(Consumer<Expr> consumer) {
-            consumer.accept(condition);
-            consumer.accept(trueExpr);
-            consumer.accept(falseExpr);
+        public Expr getCondition() {
+            return children[0];
+        }
+
+        public Expr getTrueExpr() {
+            return children[1];
+        }
+
+        public Expr getFalseExpr() {
+            return children[2];
         }
     }
 
     public static class Section extends Expr {
         public final int index;
-        public final Expr expr;
 
         public Section(int start, int end, int index, Expr expr) {
-            super(start, end);
+            super(start, end, new Expr[] { expr });
 
             this.index = index;
-            this.expr = expr;
         }
 
         @Override
@@ -308,9 +318,8 @@ public abstract class Expr {
             visitor.visitSection(this);
         }
 
-        @Override
-        public void forEach(Consumer<Expr> consumer) {
-            consumer.accept(expr);
+        public Expr getExpr() {
+            return children[0];
         }
     }
 }
