@@ -8,8 +8,10 @@ import meteordevelopment.starscript.value.Value;
 import meteordevelopment.starscript.value.ValueMap;
 
 public class Main {
+    private static final boolean USE_DOT_NOTATION = true;
+
     public static void main(String[] args) {
-        String source = "Name: #1{player.name}{#0 \", HI\"}";
+        String source = "Name: {player.name}     Age: {player.age()}";
 
         Parser.Result result = Parser.parse(source);
         Script script = Compiler.compile(result);
@@ -25,10 +27,16 @@ public class Main {
         Starscript ss = new Starscript();
         StandardLib.init(ss);
 
-        ValueMap player = new ValueMap();
-        player.set("name", "MineGame159");
-        player.set("age", (ss1, agrCount) -> Value.number(5));
-        ss.set("player", player);
+        if (USE_DOT_NOTATION) {
+            ss.set("player.name", "MineGame159");
+            ss.set("player.age", (ss1, agrCount) -> Value.number(5));
+        }
+        else {
+            ss.set("player", new ValueMap()
+                    .set("name", "MineGame159")
+                    .set("age", (ss1, agrCount) -> Value.number(5))
+            );
+        }
 
         System.out.println("Input: " + source);
         System.out.println("Output: " + ss.run(script));

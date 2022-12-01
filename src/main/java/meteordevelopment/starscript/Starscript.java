@@ -154,37 +154,37 @@ public class Starscript {
 
     // Globals
 
-    /** Sets a variable supplier for the provided name. */
+    /** Sets a variable supplier for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
     public ValueMap set(String name, Supplier<Value> supplier) {
         return globals.set(name, supplier);
     }
 
-    /** Sets a variable supplier that always returns the same value for the provided name. */
+    /** Sets a variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
     public ValueMap set(String name, Value value) {
         return globals.set(name, value);
     }
 
-    /** Sets a boolean variable supplier that always returns the same value for the provided name. */
+    /** Sets a boolean variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
     public ValueMap set(String name, boolean bool) {
         return globals.set(name, bool);
     }
 
-    /** Sets a number variable supplier that always returns the same value for the provided name. */
+    /** Sets a number variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
     public ValueMap set(String name, double number) {
         return globals.set(name, number);
     }
 
-    /** Sets a string variable supplier that always returns the same value for the provided name. */
+    /** Sets a string variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
     public ValueMap set(String name, String string) {
         return globals.set(name, string);
     }
 
-    /** Sets a function variable supplier that always returns the same value for the provided name. */
+    /** Sets a function variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
     public ValueMap set(String name, SFunction function) {
         return globals.set(name, function);
     }
 
-    /** Sets a map variable supplier that always returns the same value for the provided name. */
+    /** Sets a map variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
     public ValueMap set(String name, ValueMap map) {
         return globals.set(name, map);
     }
