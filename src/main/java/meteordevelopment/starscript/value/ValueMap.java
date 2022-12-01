@@ -82,13 +82,60 @@ public class ValueMap {
         return set(name, Value.map(map));
     }
 
-    /** Gets the variable supplier for the provided name. */
+    /**
+     * Gets the variable supplier for the provided name. <br><br>
+     *
+     * <strong>Dot Notation:</strong><br>
+     * If the name is for example 'player.name' then it gets a value with the name 'player' from this map and calls .get() with 'name' on the second map. If 'player' is not a map then returns null. See {@link #set(String, Supplier)}.
+     */
     public Supplier<Value> get(String name) {
+        int dotI = name.indexOf('.');
+
+        if (dotI >= 0) {
+            // Split name based on the dot
+            String name1 = name.substring(0, dotI);
+            String name2 = name.substring(dotI + 1);
+
+            // Get child value
+            Supplier<Value> valueSupplier = values.get(name1);
+            if (valueSupplier == null) return null;
+
+            // Make sure the child value is a map
+            Value value = valueSupplier.get();
+            if (!value.isMap()) return null;
+
+            // Get value from the child map
+            return value.getMap().get(name2);
+        }
+
+        return values.get(name);
+    }
+
+    /** Gets the variable supplier for the provided name. */
+    public Supplier<Value> getRaw(String name) {
         return values.get(name);
     }
 
     /** Returns a set of all variable names. */
     public Set<String> keys() {
         return values.keySet();
+    }
+
+    /** Removes all values from this map. */
+    public void clear() {
+        values.clear();
+    }
+
+    /**
+     * Removes a single value with the specified name from this map. <br><br>
+     *
+     * <strong>Dot Notation:</strong><br>
+     * If the name is for example 'player.name' then it removes a value with the name 'player' from this map. See {@link #set(String, Supplier)}.
+     */
+    public void remove(String name) {
+        int dotI = name.indexOf('.');
+
+        if (dotI >= 0) values.remove(name.substring(0, dotI));
+        else values.remove(name);
     }
 }

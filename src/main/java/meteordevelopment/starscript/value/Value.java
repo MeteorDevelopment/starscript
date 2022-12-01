@@ -125,7 +125,7 @@ public class Value {
             case String:   return getString();
             case Function: return "<function>";
             case Map: {
-                Supplier<Value> s = getMap().get("_toString");
+                Supplier<Value> s = getMap().getRaw("_toString");
                 return s == null ? "<map>" : s.get().toString();
             }
             default:       return "";

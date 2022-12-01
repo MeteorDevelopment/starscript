@@ -2,8 +2,8 @@ package meteordevelopment.starscript;
 
 import meteordevelopment.starscript.compiler.Expr;
 import meteordevelopment.starscript.compiler.Parser;
-import meteordevelopment.starscript.utils.*;
 import meteordevelopment.starscript.utils.Error;
+import meteordevelopment.starscript.utils.*;
 import meteordevelopment.starscript.value.Value;
 import meteordevelopment.starscript.value.ValueMap;
 
@@ -11,9 +11,18 @@ import java.util.function.Supplier;
 
 /** A VM (virtual machine) that can run compiled starscript code, {@link Script}. */
 public class Starscript {
-    private final ValueMap globals = new ValueMap();
+    private final ValueMap globals;
 
     private final Stack<Value> stack = new Stack<>();
+
+    public Starscript() {
+        globals = new ValueMap();
+    }
+
+    /** Creates a new Starscript instance with shared globals ({@link #getGlobals()}) from the parent instance. */
+    public Starscript(Starscript parent) {
+        globals = parent.globals;
+    }
 
     /** Runs the script and fills the provided {@link StringBuilder}. Throws {@link StarscriptError} if a runtime error happens. */
     public Section run(Script script, StringBuilder sb) {
@@ -54,8 +63,8 @@ public class Starscript {
                 case Less:              { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.bool(a.getNumber() < b.getNumber())); else error("This operation requires 2 number."); break; }
                 case LessEqual:         { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.bool(a.getNumber() <= b.getNumber())); else error("This operation requires 2 number."); break; }
 
-                case Variable:          { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = globals.get(name); push(s != null ? s.get() : Value.null_()); break; }
-                case Get:               { String name = script.constants.get(script.code[ip++]).getString(); Value v = pop(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().get(name); push(s != null ? s.get() : Value.null_()); break; }
+                case Variable:          { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = globals.getRaw(name); push(s != null ? s.get() : Value.null_()); break; }
+                case Get:               { String name = script.constants.get(script.code[ip++]).getString(); Value v = pop(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); push(s != null ? s.get() : Value.null_()); break; }
                 case Call:              { int argCount = script.code[ip++]; Value a = peek(argCount); if (a.isFunction()) { Value r = a.getFunction().run(this, argCount); pop(); push(r); } else error("Tried to call a %s, can only call functions.", a.type); break; }
 
                 case Jump:              { int jump = ((script.code[ip++] << 8) & 0xFF) | (script.code[ip++] & 0xFF); ip += jump; break; }
@@ -66,20 +75,20 @@ public class Starscript {
 
                 case Append:            sb.append(pop().toString()); break;
                 case ConstantAppend:    sb.append(script.constants.get(script.code[ip++]).toString()); break;
-                case VariableAppend:    { Supplier<Value> s = globals.get(script.constants.get(script.code[ip++]).getString()); sb.append((s == null ? Value.null_() : s.get()).toString()); break; }
-                case GetAppend:         { String name = script.constants.get(script.code[ip++]).getString(); Value v = pop(); if (!v.isMap()) { sb.append(Value.null_()); break; } Supplier<Value> s = v.getMap().get(name); sb.append((s != null ? s.get() : Value.null_()).toString()); break; }
+                case VariableAppend:    { Supplier<Value> s = globals.getRaw(script.constants.get(script.code[ip++]).getString()); sb.append((s == null ? Value.null_() : s.get()).toString()); break; }
+                case GetAppend:         { String name = script.constants.get(script.code[ip++]).getString(); Value v = pop(); if (!v.isMap()) { sb.append(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); sb.append((s != null ? s.get() : Value.null_()).toString()); break; }
                 case CallAppend:        { int argCount = script.code[ip++]; Value a = peek(argCount); if (a.isFunction()) { Value r = a.getFunction().run(this, argCount); pop(); sb.append(r.toString()); } else error("Tried to call a %s, can only call functions.", a.type); break; }
 
                 case VariableGet:       {
                     Value v;
-                    { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = globals.get(name); v = s != null ? s.get() : Value.null_(); } // Variable
-                    { String name = script.constants.get(script.code[ip++]).getString(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().get(name); push(s != null ? s.get() : Value.null_()); } // Get
+                    { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = globals.getRaw(name); v = s != null ? s.get() : Value.null_(); } // Variable
+                    { String name = script.constants.get(script.code[ip++]).getString(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); push(s != null ? s.get() : Value.null_()); } // Get
                     break;
                 }
                 case VariableGetAppend: {
                     Value v;
-                    { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = globals.get(name); v = s != null ? s.get() : Value.null_(); } // Variable
-                    { String name = script.constants.get(script.code[ip++]).getString(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().get(name); v = s != null ? s.get() : Value.null_(); } // Get
+                    { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = globals.getRaw(name); v = s != null ? s.get() : Value.null_(); } // Variable
+                    { String name = script.constants.get(script.code[ip++]).getString(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); v = s != null ? s.get() : Value.null_(); } // Get
                     { sb.append(v.toString()); } // Append
                     break;
                 }
@@ -189,6 +198,16 @@ public class Starscript {
         return globals.set(name, map);
     }
 
+    /** Removes all values from the globals. */
+    public void clear() {
+        globals.clear();
+    }
+
+    /** Removes a single value with the specified name from the globals. <br><br> See {@link ValueMap#remove(String)} for dot notation. */
+    public void remove(String name) {
+        globals.remove(name);
+    }
+
     /** Returns the underlying {@link ValueMap} for global variables. */
     public ValueMap getGlobals() {
         return globals;
@@ -217,7 +236,7 @@ public class Starscript {
             String start = source.substring(var.start, position);
 
             for (String key : globals.keys()) {
-                if (!key.startsWith("_") && key.startsWith(start)) callback.onCompletion(key, globals.get(key).get().isFunction());
+                if (!key.startsWith("_") && key.startsWith(start)) callback.onCompletion(key, globals.getRaw(key).get().isFunction());
             }
         }
         else if (expr instanceof Expr.Get) {
@@ -230,7 +249,7 @@ public class Starscript {
                     String start = source.substring(get.object.end + 1, position);
 
                     for (String key : value.getMap().keys()) {
-                        if (!key.startsWith("_") && key.startsWith(start)) callback.onCompletion(key, value.getMap().get(key).get().isFunction());
+                        if (!key.startsWith("_") && key.startsWith(start)) callback.onCompletion(key, value.getMap().getRaw(key).get().isFunction());
                     }
                 }
             }
@@ -241,7 +260,7 @@ public class Starscript {
         else if (expr instanceof Expr.Block) {
             if (((Expr.Block) expr).expr == null) {
                 for (String key : globals.keys()) {
-                    if (!key.startsWith("_")) callback.onCompletion(key, globals.get(key).get().isFunction());
+                    if (!key.startsWith("_")) callback.onCompletion(key, globals.getRaw(key).get().isFunction());
                 }
             }
             else {
@@ -255,14 +274,14 @@ public class Starscript {
 
     private Value resolveExpr(Expr expr) {
         if (expr instanceof Expr.Variable) {
-            Supplier<Value> supplier = globals.get(((Expr.Variable) expr).name);
+            Supplier<Value> supplier = globals.getRaw(((Expr.Variable) expr).name);
             return supplier != null ? supplier.get() : null;
         }
         else if (expr instanceof Expr.Get) {
             Value value = resolveExpr(((Expr.Get) expr).object);
             if (value == null || !value.isMap()) return null;
 
-            Supplier<Value> supplier = value.getMap().get(((Expr.Get) expr).name);
+            Supplier<Value> supplier = value.getMap().getRaw(((Expr.Get) expr).name);
             return supplier != null ? supplier.get() : null;
         }
 
