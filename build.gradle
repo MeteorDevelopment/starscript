@@ -15,6 +15,17 @@ java {
     withJavadocJar()
 }
 
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation "org.openjdk.jmh:jmh-core:1.36"
+    testImplementation "org.openjdk.jmh:jmh-generator-annprocess:1.36"
+
+    testAnnotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:1.36"
+}
+
 compileJava {
     options.encoding = "UTF-8"
 }

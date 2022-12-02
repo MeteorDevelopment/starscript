@@ -1,3 +1,5 @@
+package meteordevelopment.starscript;
+
 import meteordevelopment.starscript.Script;
 import meteordevelopment.starscript.StandardLib;
 import meteordevelopment.starscript.Starscript;
