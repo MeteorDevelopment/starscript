@@ -1,8 +1,5 @@
 package meteordevelopment.starscript;
 
-import meteordevelopment.starscript.Script;
-import meteordevelopment.starscript.StandardLib;
-import meteordevelopment.starscript.Starscript;
 import meteordevelopment.starscript.compiler.Compiler;
 import meteordevelopment.starscript.compiler.Parser;
 import meteordevelopment.starscript.utils.Error;

@@ -2,7 +2,7 @@
 Fast text formatting language for Java.
 
 - Lightweight with no dependencies
-- Faster than `String.format`
+- Faster than `String.format` (See [Benchmark](https://github.com/MeteorDevelopment/starscript/blob/master/src/test/java/meteordevelopment/starscript/Benchmark.java))
 - Standard operators + - * / % ^
 - Ability to call functions defined in java
 - Variables can be different each time they are used
