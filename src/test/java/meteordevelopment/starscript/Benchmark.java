@@ -30,13 +30,30 @@ public class Benchmark {
     @Param({"10000"})
     public int iterations;
 
+    public final String formatSource = "FPS: %.0f";
+    public final String starscriptSource = "FPS: {round(fps)}";
+
+    public Script script;
+    public StringBuilder sb;
+    public Starscript ss;
+
+    @Setup
+    public void setup() {
+        script = Compiler.compile(Parser.parse(starscriptSource));
+        sb = new StringBuilder();
+
+        ss = new Starscript();
+        StandardLib.init(ss);
+        ss.set("name", "MineGame159");
+        ss.set("fps", 59.68223);
+    }
+
     @org.openjdk.jmh.annotations.Benchmark
     public String format() {
-        String source = "FPS: %.0f";
         String result = "";
 
         for (int i = 0; i < iterations; i++) {
-            result = String.format(source, 59.68223);
+            result = String.format(formatSource, 59.68223);
         }
 
         return result;
@@ -44,15 +61,6 @@ public class Benchmark {
 
     @org.openjdk.jmh.annotations.Benchmark
     public String starscript() {
-        String source = "FPS: {round(fps)}";
-        Script script = Compiler.compile(Parser.parse(source));
-        StringBuilder sb = new StringBuilder();
-
-        Starscript ss = new Starscript();
-        StandardLib.init(ss);
-        ss.set("name", "MineGame159");
-        ss.set("fps", 59.68223);
-
         String result = "";
 
         for (int i = 0; i < iterations; i++) {
