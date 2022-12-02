@@ -3,6 +3,7 @@ package meteordevelopment.starscript;
 import meteordevelopment.starscript.compiler.Compiler;
 import meteordevelopment.starscript.compiler.Parser;
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -49,24 +50,16 @@ public class Benchmark {
     }
 
     @org.openjdk.jmh.annotations.Benchmark
-    public String format() {
-        String result = "";
-
+    public void format(Blackhole bh) {
         for (int i = 0; i < iterations; i++) {
-            result = String.format(formatSource, 59.68223);
+            bh.consume(String.format(formatSource, 59.68223));
         }
-
-        return result;
     }
 
     @org.openjdk.jmh.annotations.Benchmark
-    public String starscript() {
-        String result = "";
-
+    public void starscript(Blackhole bh) {
         for (int i = 0; i < iterations; i++) {
-            result = ss.run(script, sb).toString();
+            bh.consume(ss.run(script, sb).toString());
         }
-
-        return result;
     }
 }
