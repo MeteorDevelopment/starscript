@@ -3,7 +3,6 @@ package meteordevelopment.starscript;
 import meteordevelopment.starscript.compiler.Compiler;
 import meteordevelopment.starscript.compiler.Parser;
 import meteordevelopment.starscript.utils.Error;
-import meteordevelopment.starscript.utils.SFunction;
 import meteordevelopment.starscript.value.Value;
 import meteordevelopment.starscript.value.ValueMap;
 
