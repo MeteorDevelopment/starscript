@@ -225,8 +225,9 @@ public class Parser {
             return expr;
         }
 
-        if (expressionDepth == 0 && match(Token.LeftBrace)) {
+        if (match(Token.LeftBrace)) {
             int start = previous.start;
+            int prevExpressionDepth = expressionDepth;
 
             expressionDepth++;
             Expr expr;
@@ -239,7 +240,10 @@ public class Parser {
                 throw e;
             }
 
-            expr = new Expr.Block(start, previous.end, expr);
+            if (prevExpressionDepth == 0) {
+                expr = new Expr.Block(start, previous.end, expr);
+            }
+
             consume(Token.RightBrace, "Expected '}' after expression.", expr);
             expressionDepth--;
             return expr;

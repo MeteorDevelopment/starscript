@@ -122,7 +122,7 @@ public abstract class Expr {
 
     public static class Block extends Expr {
         public Block(int start, int end, Expr expr) {
-            super(start, end, new Expr[] { expr });
+            super(start, end, expr != null ? new Expr[] { expr } : EMPTY_CHILDREN);
         }
 
         @Override
