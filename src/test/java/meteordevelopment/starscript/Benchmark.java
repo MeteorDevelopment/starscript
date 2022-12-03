@@ -52,7 +52,7 @@ public class Benchmark {
     public Starscript ss;
 
     @Setup
-    public void setup() {
+    public void setup() throws Exception {
         sb = new StringBuilder();
 
         // Format
@@ -79,7 +79,7 @@ public class Benchmark {
     }
 
     @org.openjdk.jmh.annotations.Benchmark
-    public void starscript(Blackhole bh) {
+    public void starscript(Blackhole bh) throws Exception {
         bh.consume(ss.run(script, sb).toString());
     }
 }

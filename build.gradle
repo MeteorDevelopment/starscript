@@ -6,10 +6,10 @@ plugins {
 group "meteordevelopment"
 version "0.2.2"
 
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_7
 
 java {
-    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_7
 
     withSourcesJar()
     withJavadocJar()

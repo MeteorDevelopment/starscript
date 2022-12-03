@@ -2,7 +2,7 @@ package meteordevelopment.starscript.value;
 
 import meteordevelopment.starscript.utils.SFunction;
 
-import java.util.function.Supplier;
+import java.util.concurrent.Callable;
 
 /** Class that holds any starscript value. */
 public class Value {
@@ -125,8 +125,12 @@ public class Value {
             case String:   return getString();
             case Function: return "<function>";
             case Map: {
-                Supplier<Value> s = getMap().getRaw("_toString");
-                return s == null ? "<map>" : s.get().toString();
+                Callable<Value> s = getMap().getRaw("_toString");
+                try {
+                    return s == null ? "<map>" : s.call().toString();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
             default:       return "";
         }

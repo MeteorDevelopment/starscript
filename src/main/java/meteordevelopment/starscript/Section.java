@@ -1,7 +1,14 @@
 package meteordevelopment.starscript;
 
+import java.util.function.Supplier;
+
 public class Section {
-    private static final ThreadLocal<StringBuilder> SB = ThreadLocal.withInitial(StringBuilder::new);
+    private static final ThreadLocal<StringBuilder> SB =
+            new ThreadLocal<StringBuilder>() {
+                @Override protected StringBuilder initialValue() {
+                    return new StringBuilder();
+                }
+            };
 
     public final int index;
     public final String text;

@@ -7,20 +7,20 @@ public abstract class Expr {
     private static final Expr[] EMPTY_CHILDREN = new Expr[0];
 
     public interface Visitor {
-        void visitNull(Null expr);
-        void visitString(String expr);
-        void visitNumber(Number expr);
-        void visitBool(Bool expr);
-        void visitBlock(Block expr);
-        void visitGroup(Group expr);
-        void visitBinary(Binary expr);
-        void visitUnary(Unary expr);
-        void visitVariable(Variable expr);
-        void visitGet(Get expr);
-        void visitCall(Call expr);
-        void visitLogical(Logical expr);
-        void visitConditional(Conditional expr);
-        void visitSection(Section expr);
+        void visitNull(Null expr) throws Exception;
+        void visitString(String expr) throws Exception;
+        void visitNumber(Number expr) throws Exception;
+        void visitBool(Bool expr) throws Exception;
+        void visitBlock(Block expr) throws Exception;
+        void visitGroup(Group expr) throws Exception;
+        void visitBinary(Binary expr) throws Exception;
+        void visitUnary(Unary expr) throws Exception;
+        void visitVariable(Variable expr) throws Exception;
+        void visitGet(Get expr) throws Exception;
+        void visitCall(Call expr) throws Exception;
+        void visitLogical(Logical expr) throws Exception;
+        void visitConditional(Conditional expr) throws Exception;
+        void visitSection(Section expr) throws Exception;
     }
 
     public final int start, end;
@@ -42,7 +42,7 @@ public abstract class Expr {
         this(start, end, EMPTY_CHILDREN);
     }
 
-    public abstract void accept(Visitor visitor);
+    public abstract void accept(Visitor visitor) throws Exception;
 
     public java.lang.String getSource(java.lang.String source) {
         return source.substring(start, end);
@@ -70,7 +70,7 @@ public abstract class Expr {
         }
 
         @Override
-        public void accept(Visitor visitor) {
+        public void accept(Visitor visitor) throws Exception {
             visitor.visitNull(this);
         }
     }
@@ -85,7 +85,7 @@ public abstract class Expr {
         }
 
         @Override
-        public void accept(Visitor visitor) {
+        public void accept(Visitor visitor) throws Exception {
             visitor.visitString(this);
         }
     }
@@ -100,7 +100,7 @@ public abstract class Expr {
         }
 
         @Override
-        public void accept(Visitor visitor) {
+        public void accept(Visitor visitor) throws Exception {
             visitor.visitNumber(this);
         }
     }
@@ -115,7 +115,7 @@ public abstract class Expr {
         }
 
         @Override
-        public void accept(Visitor visitor) {
+        public void accept(Visitor visitor) throws Exception {
             visitor.visitBool(this);
         }
     }
@@ -126,7 +126,7 @@ public abstract class Expr {
         }
 
         @Override
-        public void accept(Visitor visitor) {
+        public void accept(Visitor visitor) throws Exception {
             visitor.visitBlock(this);
         }
 
@@ -141,7 +141,7 @@ public abstract class Expr {
         }
 
         @Override
-        public void accept(Visitor visitor) {
+        public void accept(Visitor visitor) throws Exception {
             visitor.visitGroup(this);
         }
 
@@ -160,7 +160,7 @@ public abstract class Expr {
         }
 
         @Override
-        public void accept(Visitor visitor) {
+        public void accept(Visitor visitor) throws Exception {
             visitor.visitBinary(this);
         }
 
@@ -183,7 +183,7 @@ public abstract class Expr {
         }
 
         @Override
-        public void accept(Visitor visitor) {
+        public void accept(Visitor visitor) throws Exception {
             visitor.visitUnary(this);
         }
 
@@ -202,7 +202,7 @@ public abstract class Expr {
         }
 
         @Override
-        public void accept(Visitor visitor) {
+        public void accept(Visitor visitor) throws Exception {
             visitor.visitVariable(this);
         }
     }
@@ -217,7 +217,7 @@ public abstract class Expr {
         }
 
         @Override
-        public void accept(Visitor visitor) {
+        public void accept(Visitor visitor) throws Exception {
             visitor.visitGet(this);
         }
 
@@ -232,7 +232,7 @@ public abstract class Expr {
         }
 
         @Override
-        public void accept(Visitor visitor) {
+        public void accept(Visitor visitor) throws Exception {
             visitor.visitCall(this);
         }
 
@@ -268,7 +268,7 @@ public abstract class Expr {
         }
 
         @Override
-        public void accept(Visitor visitor) {
+        public void accept(Visitor visitor) throws Exception {
             visitor.visitLogical(this);
         }
 
@@ -287,7 +287,7 @@ public abstract class Expr {
         }
 
         @Override
-        public void accept(Visitor visitor) {
+        public void accept(Visitor visitor) throws Exception {
             visitor.visitConditional(this);
         }
 
@@ -314,7 +314,7 @@ public abstract class Expr {
         }
 
         @Override
-        public void accept(Visitor visitor) {
+        public void accept(Visitor visitor) throws Exception {
             visitor.visitSection(this);
         }
 

@@ -4,7 +4,7 @@ import meteordevelopment.starscript.compiler.Expr;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.concurrent.Callable;
 
 /**
  * Replaces usages of variables or get expressions with a different expression. <strong>Doesn't support functions.</strong><br><br>
@@ -14,29 +14,29 @@ import java.util.function.Supplier;
  * addReplacer("player.name", () -> "foo.bar");
  */
 public class VariableReplacementTransformer extends AbstractExprVisitor {
-    private final Map<String, Supplier<String>> replacers = new HashMap<>();
+    private final Map<String, Callable<String>> replacers = new HashMap<>();
     private final StringBuilder sb = new StringBuilder();
 
-    public void addReplacer(String name, Supplier<String> supplier) {
+    public void addReplacer(String name, Callable<String> supplier) {
         replacers.put(name, supplier);
     }
 
     @Override
-    public void visitVariable(Expr.Variable expr) {
+    public void visitVariable(Expr.Variable expr) throws Exception {
         tryReplace(expr, expr.name);
     }
 
     @Override
-    public void visitGet(Expr.Get expr) {
+    public void visitGet(Expr.Get expr) throws Exception {
         String name = getFullName(expr);
         if (name != null) tryReplace(expr, name);
     }
 
-    private void tryReplace(Expr expr, String name) {
-        Supplier<String> replacer = replacers.get(name);
+    private void tryReplace(Expr expr, String name) throws Exception {
+        Callable<String> replacer = replacers.get(name);
         if (replacer == null) return;
 
-        Expr replacement = createReplacement(replacer.get());
+        Expr replacement = createReplacement(replacer.call());
         expr.replace(replacement);
     }
 

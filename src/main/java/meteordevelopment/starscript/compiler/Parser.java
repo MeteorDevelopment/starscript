@@ -355,7 +355,7 @@ public class Parser {
             return errors.size() > 0;
         }
 
-        public void accept(Expr.Visitor visitor) {
+        public void accept(Expr.Visitor visitor) throws Exception {
             for (Expr expr : exprs) expr.accept(visitor);
         }
     }

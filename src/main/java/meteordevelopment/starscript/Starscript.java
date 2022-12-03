@@ -7,7 +7,7 @@ import meteordevelopment.starscript.utils.*;
 import meteordevelopment.starscript.value.Value;
 import meteordevelopment.starscript.value.ValueMap;
 
-import java.util.function.Supplier;
+import java.util.concurrent.Callable;
 
 /** A VM (virtual machine) that can run compiled starscript code, {@link Script}. */
 public class Starscript {
@@ -25,7 +25,7 @@ public class Starscript {
     }
 
     /** Runs the script and fills the provided {@link StringBuilder}. Throws {@link StarscriptError} if a runtime error happens. */
-    public Section run(Script script, StringBuilder sb) {
+    public Section run(Script script, StringBuilder sb) throws Exception {
         stack.clear();
 
         sb.setLength(0);
@@ -63,8 +63,8 @@ public class Starscript {
                 case Less:              { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.bool(a.getNumber() < b.getNumber())); else error("This operation requires 2 number."); break; }
                 case LessEqual:         { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.bool(a.getNumber() <= b.getNumber())); else error("This operation requires 2 number."); break; }
 
-                case Variable:          { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = globals.getRaw(name); push(s != null ? s.get() : Value.null_()); break; }
-                case Get:               { String name = script.constants.get(script.code[ip++]).getString(); Value v = pop(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); push(s != null ? s.get() : Value.null_()); break; }
+                case Variable:          { String name = script.constants.get(script.code[ip++]).getString(); Callable<Value> s = globals.getRaw(name); push(s != null ? s.call() : Value.null_()); break; }
+                case Get:               { String name = script.constants.get(script.code[ip++]).getString(); Value v = pop(); if (!v.isMap()) { push(Value.null_()); break; } Callable<Value> s = v.getMap().getRaw(name); push(s != null ? s.call() : Value.null_()); break; }
                 case Call:              { int argCount = script.code[ip++]; Value a = peek(argCount); if (a.isFunction()) { Value r = a.getFunction().run(this, argCount); pop(); push(r); } else error("Tried to call a %s, can only call functions.", a.type); break; }
 
                 case Jump:              { int jump = ((script.code[ip++] << 8) & 0xFF) | (script.code[ip++] & 0xFF); ip += jump; break; }
@@ -75,20 +75,20 @@ public class Starscript {
 
                 case Append:            sb.append(pop().toString()); break;
                 case ConstantAppend:    sb.append(script.constants.get(script.code[ip++]).toString()); break;
-                case VariableAppend:    { Supplier<Value> s = globals.getRaw(script.constants.get(script.code[ip++]).getString()); sb.append((s == null ? Value.null_() : s.get()).toString()); break; }
-                case GetAppend:         { String name = script.constants.get(script.code[ip++]).getString(); Value v = pop(); if (!v.isMap()) { sb.append(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); sb.append((s != null ? s.get() : Value.null_()).toString()); break; }
+                case VariableAppend:    { Callable<Value> s = globals.getRaw(script.constants.get(script.code[ip++]).getString()); sb.append((s == null ? Value.null_() : s.call()).toString()); break; }
+                case GetAppend:         { String name = script.constants.get(script.code[ip++]).getString(); Value v = pop(); if (!v.isMap()) { sb.append(Value.null_()); break; } Callable<Value> s = v.getMap().getRaw(name); sb.append((s != null ? s.call() : Value.null_()).toString()); break; }
                 case CallAppend:        { int argCount = script.code[ip++]; Value a = peek(argCount); if (a.isFunction()) { Value r = a.getFunction().run(this, argCount); pop(); sb.append(r.toString()); } else error("Tried to call a %s, can only call functions.", a.type); break; }
 
                 case VariableGet:       {
                     Value v;
-                    { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = globals.getRaw(name); v = s != null ? s.get() : Value.null_(); } // Variable
-                    { String name = script.constants.get(script.code[ip++]).getString(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); push(s != null ? s.get() : Value.null_()); } // Get
+                    { String name = script.constants.get(script.code[ip++]).getString(); Callable<Value> s = globals.getRaw(name); v = s != null ? s.call() : Value.null_(); } // Variable
+                    { String name = script.constants.get(script.code[ip++]).getString(); if (!v.isMap()) { push(Value.null_()); break; } Callable<Value> s = v.getMap().getRaw(name); push(s != null ? s.call() : Value.null_()); } // Get
                     break;
                 }
                 case VariableGetAppend: {
                     Value v;
-                    { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = globals.getRaw(name); v = s != null ? s.get() : Value.null_(); } // Variable
-                    { String name = script.constants.get(script.code[ip++]).getString(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); v = s != null ? s.get() : Value.null_(); } // Get
+                    { String name = script.constants.get(script.code[ip++]).getString(); Callable<Value> s = globals.getRaw(name); v = s != null ? s.call() : Value.null_(); } // Variable
+                    { String name = script.constants.get(script.code[ip++]).getString(); if (!v.isMap()) { push(Value.null_()); break; } Callable<Value> s = v.getMap().getRaw(name); v = s != null ? s.call() : Value.null_(); } // Get
                     { sb.append(v.toString()); } // Append
                     break;
                 }
@@ -107,7 +107,7 @@ public class Starscript {
     }
 
     /** Runs the script. Throws {@link StarscriptError} if a runtime error happens. */
-    public Section run(Script script) {
+    public Section run(Script script) throws Exception {
         return run(script, new StringBuilder());
     }
 
@@ -163,38 +163,38 @@ public class Starscript {
 
     // Globals
 
-    /** Sets a variable supplier for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
-    public ValueMap set(String name, Supplier<Value> supplier) {
+    /** Sets a variable supplier for the provided name. <br><br> See {@link ValueMap#set(String, Callable)} for dot notation. */
+    public ValueMap set(String name, Callable<Value> supplier) throws Exception {
         return globals.set(name, supplier);
     }
 
-    /** Sets a variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
-    public ValueMap set(String name, Value value) {
+    /** Sets a variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Callable)} for dot notation. */
+    public ValueMap set(String name, Value value) throws Exception {
         return globals.set(name, value);
     }
 
-    /** Sets a boolean variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
-    public ValueMap set(String name, boolean bool) {
+    /** Sets a boolean variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Callable)} for dot notation. */
+    public ValueMap set(String name, boolean bool) throws Exception {
         return globals.set(name, bool);
     }
 
-    /** Sets a number variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
-    public ValueMap set(String name, double number) {
+    /** Sets a number variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Callable)} for dot notation. */
+    public ValueMap set(String name, double number) throws Exception {
         return globals.set(name, number);
     }
 
-    /** Sets a string variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
-    public ValueMap set(String name, String string) {
+    /** Sets a string variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Callable)} for dot notation. */
+    public ValueMap set(String name, String string) throws Exception {
         return globals.set(name, string);
     }
 
-    /** Sets a function variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
-    public ValueMap set(String name, SFunction function) {
+    /** Sets a function variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Callable)} for dot notation. */
+    public ValueMap set(String name, SFunction function) throws Exception {
         return globals.set(name, function);
     }
 
-    /** Sets a map variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
-    public ValueMap set(String name, ValueMap map) {
+    /** Sets a map variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Callable)} for dot notation. */
+    public ValueMap set(String name, ValueMap map) throws Exception {
         return globals.set(name, map);
     }
 
@@ -216,7 +216,7 @@ public class Starscript {
     // Completions
 
     /** Calls the provided callback for every completion that is able to be resolved from global variables. */
-    public void getCompletions(String source, int position, CompletionCallback callback) {
+    public void getCompletions(String source, int position, CompletionCallback callback) throws Exception {
         Parser.Result result = Parser.parse(source);
 
         for (Expr expr : result.exprs) {
@@ -228,7 +228,7 @@ public class Starscript {
         }
     }
 
-    private void completionsExpr(String source, int position, Expr expr, CompletionCallback callback) {
+    private void completionsExpr(String source, int position, Expr expr, CompletionCallback callback) throws Exception {
         if (position < expr.start || (position > expr.end && position != source.length())) return;
 
         if (expr instanceof Expr.Variable) {
@@ -236,7 +236,7 @@ public class Starscript {
             String start = source.substring(var.start, position);
 
             for (String key : globals.keys()) {
-                if (!key.startsWith("_") && key.startsWith(start)) callback.onCompletion(key, globals.getRaw(key).get().isFunction());
+                if (!key.startsWith("_") && key.startsWith(start)) callback.onCompletion(key, globals.getRaw(key).call().isFunction());
             }
         }
         else if (expr instanceof Expr.Get) {
@@ -249,7 +249,7 @@ public class Starscript {
                     String start = source.substring(get.getObject().end + 1, position);
 
                     for (String key : value.getMap().keys()) {
-                        if (!key.startsWith("_") && key.startsWith(start)) callback.onCompletion(key, value.getMap().getRaw(key).get().isFunction());
+                        if (!key.startsWith("_") && key.startsWith(start)) callback.onCompletion(key, value.getMap().getRaw(key).call().isFunction());
                     }
                 }
             }
@@ -260,7 +260,7 @@ public class Starscript {
         else if (expr instanceof Expr.Block) {
             if (((Expr.Block) expr).getExpr() == null) {
                 for (String key : globals.keys()) {
-                    if (!key.startsWith("_")) callback.onCompletion(key, globals.getRaw(key).get().isFunction());
+                    if (!key.startsWith("_")) callback.onCompletion(key, globals.getRaw(key).call().isFunction());
                 }
             }
             else {
@@ -272,17 +272,17 @@ public class Starscript {
         }
     }
 
-    private Value resolveExpr(Expr expr) {
+    private Value resolveExpr(Expr expr) throws Exception {
         if (expr instanceof Expr.Variable) {
-            Supplier<Value> supplier = globals.getRaw(((Expr.Variable) expr).name);
-            return supplier != null ? supplier.get() : null;
+            Callable<Value> supplier = globals.getRaw(((Expr.Variable) expr).name);
+            return supplier != null ? supplier.call() : null;
         }
         else if (expr instanceof Expr.Get) {
             Value value = resolveExpr(((Expr.Get) expr).getObject());
             if (value == null || !value.isMap()) return null;
 
-            Supplier<Value> supplier = value.getMap().getRaw(((Expr.Get) expr).name);
-            return supplier != null ? supplier.get() : null;
+            Callable<Value> supplier = value.getMap().getRaw(((Expr.Get) expr).name);
+            return supplier != null ? supplier.call() : null;
         }
 
         return null;

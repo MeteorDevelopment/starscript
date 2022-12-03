@@ -18,7 +18,7 @@ public class Compiler implements Expr.Visitor {
     private Compiler() {}
 
     /** Produces compiled {@link Script} from {@link Parser.Result} that can be run inside {@link meteordevelopment.starscript.Starscript}. */
-    public static Script compile(Parser.Result result) {
+    public static Script compile(Parser.Result result) throws Exception {
         Compiler compiler = new Compiler();
 
         for (Expr expr : result.exprs) compiler.compile(expr);
@@ -50,7 +50,7 @@ public class Compiler implements Expr.Visitor {
     }
 
     @Override
-    public void visitBlock(Expr.Block expr) {
+    public void visitBlock(Expr.Block expr) throws Exception {
         blockDepth++;
 
         if (expr.getExpr() instanceof Expr.String) constantAppend = true;
@@ -72,12 +72,12 @@ public class Compiler implements Expr.Visitor {
     }
 
     @Override
-    public void visitGroup(Expr.Group expr) {
+    public void visitGroup(Expr.Group expr) throws Exception {
         compile(expr.getExpr());
     }
 
     @Override
-    public void visitBinary(Expr.Binary expr) {
+    public void visitBinary(Expr.Binary expr) throws Exception {
         compile(expr.getLeft());
 
         if (expr.op == Token.Plus && (expr.getRight() instanceof Expr.String || expr.getRight() instanceof Expr.Number)) {
@@ -104,7 +104,7 @@ public class Compiler implements Expr.Visitor {
     }
 
     @Override
-    public void visitUnary(Expr.Unary expr) {
+    public void visitUnary(Expr.Unary expr) throws Exception {
         compile(expr.getRight());
 
         if (expr.op == Token.Bang) script.write(Instruction.Not);
@@ -117,7 +117,7 @@ public class Compiler implements Expr.Visitor {
     }
 
     @Override
-    public void visitGet(Expr.Get expr) {
+    public void visitGet(Expr.Get expr) throws Exception {
         boolean prevGetAppend = getAppend;
         getAppend = false;
 
@@ -134,7 +134,7 @@ public class Compiler implements Expr.Visitor {
     }
 
     @Override
-    public void visitCall(Expr.Call expr) {
+    public void visitCall(Expr.Call expr) throws Exception {
         boolean prevCallAppend = callAppend;
         compile(expr.getCallee());
 
@@ -146,7 +146,7 @@ public class Compiler implements Expr.Visitor {
     }
 
     @Override
-    public void visitLogical(Expr.Logical expr) {
+    public void visitLogical(Expr.Logical expr) throws Exception {
         compile(expr.getLeft());
         int endJump = script.writeJump(expr.op == Token.And ? Instruction.JumpIfFalse : Instruction.JumpIfTrue);
 
@@ -157,7 +157,7 @@ public class Compiler implements Expr.Visitor {
     }
 
     @Override
-    public void visitConditional(Expr.Conditional expr) {
+    public void visitConditional(Expr.Conditional expr) throws Exception {
         compile(expr.getCondition());
         int falseJump = script.writeJump(Instruction.JumpIfFalse);
 
@@ -173,14 +173,14 @@ public class Compiler implements Expr.Visitor {
     }
 
     @Override
-    public void visitSection(Expr.Section expr) {
+    public void visitSection(Expr.Section expr) throws Exception {
         script.write(Instruction.Section, expr.index);
         compile(expr.getExpr());
     }
 
     // Helpers
 
-    private void compile(Expr expr) {
+    private void compile(Expr expr) throws Exception {
         if (expr != null) expr.accept(this);
     }
 }
