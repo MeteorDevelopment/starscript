@@ -156,6 +156,10 @@ public class Lexer {
 
     // Helpers
 
+    public boolean isInExpression() {
+        return expressionDepth > 0;
+    }
+
     private void unexpected() {
         createToken(Token.Error, "Unexpected character.");
     }
