@@ -3,6 +3,8 @@ package meteordevelopment.starscript;
 import java.util.function.Supplier;
 
 public class Section {
+    // DNT: Java 7 Support needs this
+    @SuppressWarnings("AnonymousHasLambdaAlternative")
     private static final ThreadLocal<StringBuilder> SB =
             new ThreadLocal<StringBuilder>() {
                 @Override protected StringBuilder initialValue() {

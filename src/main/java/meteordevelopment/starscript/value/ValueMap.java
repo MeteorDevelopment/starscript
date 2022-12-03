@@ -31,12 +31,7 @@ public class ValueMap {
 
             if (valueSupplier == null) {
                 map = new ValueMap();
-                values.put(name1, new Callable<Value>() {
-                    @Override
-                    public Value call() {
-                        return Value.map(map);
-                    }
-                });
+                values.put(name1, () -> Value.map(map));
             }
             else {
                 Value value = valueSupplier.call();
@@ -44,12 +39,7 @@ public class ValueMap {
                 if (value.isMap()) map = value.getMap();
                 else {
                     map = new ValueMap();
-                    values.put(name1, new Callable<Value>() {
-                        @Override
-                        public Value call() {
-                            return Value.map(map);
-                        }
-                    });
+                    values.put(name1, () -> Value.map(map));
                 }
             }
 
@@ -63,12 +53,7 @@ public class ValueMap {
 
     /** Sets a variable supplier that always returns the same value for the provided name. <br><br> See {@link #set(String, Callable)} for dot notation. */
     public ValueMap set(String name, final Value value) throws Exception {
-        set(name, new Callable<Value>() {
-            @Override
-            public Value call() {
-                return value;
-            }
-        });
+        set(name, () -> value);
         return this;
     }
 

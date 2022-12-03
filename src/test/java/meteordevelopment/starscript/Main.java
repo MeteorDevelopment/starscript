@@ -29,22 +29,12 @@ public class Main {
 
         if (USE_DOT_NOTATION) {
             ss.set("player.name", "MineGame159");
-            ss.set("player.age", new SFunction() {
-                @Override
-                public Value run(Starscript ss1, int agrCount) {
-                    return Value.number(5);
-                }
-            });
+            ss.set("player.age", (ss1, agrCount) -> Value.number(5));
         }
         else {
             ss.set("player", new ValueMap()
                     .set("name", "MineGame159")
-                    .set("age", new SFunction() {
-                        @Override
-                        public Value run(Starscript ss1, int agrCount) {
-                            return Value.number(5);
-                        }
-                    })
+                    .set("age", (ss1, agrCount) -> Value.number(5))
             );
         }
 

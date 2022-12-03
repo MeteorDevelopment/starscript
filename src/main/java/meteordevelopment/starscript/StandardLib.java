@@ -1,12 +1,10 @@
 package meteordevelopment.starscript;
 
-import meteordevelopment.starscript.utils.SFunction;
 import meteordevelopment.starscript.value.Value;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
-import java.util.concurrent.Callable;
 
 /** Standard library with some default functions and variables. */
 public class StandardLib {
@@ -19,94 +17,24 @@ public class StandardLib {
     public static void init(Starscript ss) throws Exception {
         // Variables
         ss.set("PI", Math.PI);
-        ss.set("time", new Callable<Value>() {
-            @Override
-            public Value call() {
-                return Value.string(timeFormat.format(new Date()));
-            }
-        });
-        ss.set("date", new Callable<Value>() {
-            @Override
-            public Value call() {
-                return Value.string(dateFormat.format(new Date()));
-            }
-        });
+        ss.set("time", () -> Value.string(timeFormat.format(new Date())));
+        ss.set("date", () -> Value.string(dateFormat.format(new Date())));
 
         // Numbers
-        ss.set("round", new SFunction() {
-            @Override
-            public Value run(Starscript ss12, int argCount11) {
-                return round(ss12, argCount11);
-            }
-        });
-        ss.set("roundToString", new SFunction() {
-            @Override
-            public Value run(Starscript ss11, int argCount10) {
-                return roundToString(ss11, argCount10);
-            }
-        });
-        ss.set("floor", new SFunction() {
-            @Override
-            public Value run(Starscript ss10, int argCount9) {
-                return floor(ss10, argCount9);
-            }
-        });
-        ss.set("ceil", new SFunction() {
-            @Override
-            public Value run(Starscript ss9, int argCount8) {
-                return ceil(ss9, argCount8);
-            }
-        });
-        ss.set("abs", new SFunction() {
-            @Override
-            public Value run(Starscript ss8, int argCount7) {
-                return abs(ss8, argCount7);
-            }
-        });
-        ss.set("random", new SFunction() {
-            @Override
-            public Value run(Starscript ss7, int argCount6) {
-                return random(ss7, argCount6);
-            }
-        });
+        ss.set("round", StandardLib::round);
+        ss.set("roundToString", StandardLib::roundToString);
+        ss.set("floor", StandardLib::floor);
+        ss.set("ceil", StandardLib::ceil);
+        ss.set("abs", StandardLib::abs);
+        ss.set("random", StandardLib::random);
 
         // Strings
-        ss.set("string", new SFunction() {
-            @Override
-            public Value run(Starscript ss6, int argCount5) {
-                return string(ss6, argCount5);
-            }
-        });
-        ss.set("toUpper", new SFunction() {
-            @Override
-            public Value run(Starscript ss5, int argCount4) {
-                return toUpper(ss5, argCount4);
-            }
-        });
-        ss.set("toLower", new SFunction() {
-            @Override
-            public Value run(Starscript ss4, int argCount3) {
-                return toLower(ss4, argCount3);
-            }
-        });
-        ss.set("contains", new SFunction() {
-            @Override
-            public Value run(Starscript ss3, int argCount2) {
-                return contains(ss3, argCount2);
-            }
-        });
-        ss.set("replace", new SFunction() {
-            @Override
-            public Value run(Starscript ss2, int argCount1) {
-                return replace(ss2, argCount1);
-            }
-        });
-        ss.set("pad", new SFunction() {
-            @Override
-            public Value run(Starscript ss1, int argCount) {
-                return pad(ss1, argCount);
-            }
-        });
+        ss.set("string", StandardLib::string);
+        ss.set("toUpper", StandardLib::toUpper);
+        ss.set("toLower", StandardLib::toLower);
+        ss.set("contains", StandardLib::contains);
+        ss.set("replace", StandardLib::replace);
+        ss.set("pad", StandardLib::pad);
     }
 
     // Numbers
