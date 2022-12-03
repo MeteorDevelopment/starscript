@@ -1,7 +1,5 @@
 package meteordevelopment.starscript;
 
-import java.util.function.Supplier;
-
 public class Section {
     // DNT: Java 7 Support needs this
     @SuppressWarnings("AnonymousHasLambdaAlternative")
