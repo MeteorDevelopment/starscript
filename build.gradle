@@ -6,7 +6,7 @@ plugins {
 }
 
 group "meteordevelopment"
-version "0.2.2"
+version "0.2.2" + (isLegacy ? "-legacy" : "")
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
@@ -31,40 +31,43 @@ dependencies {
 compileJava {
     options.encoding = "UTF-8"
 
-    // Note: This will fail if the JVM is above Java 8 (Fork RetroLambda to fix)
-    doLast {
-        var retrolambaJar = new URL("https://oss.sonatype.org/content/groups/public/net/orfjackal/retrolambda/retrolambda/2.5.7/retrolambda-2.5.7.jar")
-        var retrolambdaFile = new File("${rootProject.buildDir}/retrolambda/retrolambda.jar")
-        if (!retrolambdaFile.exists()) {
-            retrolambdaFile.getParentFile().mkdirs()
-            try (InputStream is = retrolambaJar.openStream()) {
-                Files.copy(is, retrolambdaFile.toPath())
+    // Note: RetroGradle does not work with Java 15+ due to multiple incompatibilities
+    // RetroGradle is only officially rated to work with Java 8 bytecode, so a fork would be needed
+    if (isLegacy) {
+        doLast {
+            var retrolambaJar = new URL("https://oss.sonatype.org/content/groups/public/net/orfjackal/retrolambda/retrolambda/2.5.7/retrolambda-2.5.7.jar")
+            var retrolambdaFile = new File("${rootProject.buildDir}/retrolambda/retrolambda.jar")
+            if (!retrolambdaFile.exists()) {
+                retrolambdaFile.getParentFile().mkdirs()
+                try (InputStream is = retrolambaJar.openStream()) {
+                    Files.copy(is, retrolambdaFile.toPath())
+                }
             }
-        }
-        var classpath = project.sourceSets.main.runtimeClasspath
-        var classpathString = classpath.files.collect { it.absolutePath }.join(File.pathSeparator)
-        var javahome = System.getProperty("java.home")
-        var javaexe = javahome + File.separator + "bin" + File.separator + "java"
-        if (System.getProperty("os.name").toLowerCase().contains("win") && !System.getProperty("os.name").toLowerCase().contains("darwin")) {
-            javaexe += ".exe"
-        }
-        var processBuilder = new ProcessBuilder(
-                javaexe,
-                "-Dretrolambda.inputDir=${compileJava.destinationDir.toString().replace("\\", "\\\\").replace(" ", "\\ ")}",
-                "-Dretrolambda.classpath=${classpathString.replace("\\", "\\\\").replace(" ", "\\ ")}",
-                "-Dretrolambda.defaultMethods=true",
-                "-Dretrolambda.bytecodeVersion=51",
-                "-javaagent:${retrolambdaFile.absolutePath.toString().replace("\\", "\\\\").replace(" ", "\\ ")}",
-                "-jar",
-                retrolambdaFile.absolutePath.toString().replace("\\", "\\\\").replace(" ", "\\ "),
-        )
-        var outputLog = new File("${rootProject.buildDir}/retrolambda/${project.path.replace(":", "_")}output.log")
-        processBuilder.redirectOutput(outputLog)
-        processBuilder.redirectError(outputLog)
-        var process = processBuilder.start()
-        process.waitFor()
-        if (process.exitValue() != 0) {
-            throw new GradleException("RetroLambda failed with exit code " + process.exitValue())
+            var classpath = project.sourceSets.main.runtimeClasspath
+            var classpathString = classpath.files.collect { it.absolutePath }.join(File.pathSeparator)
+            var javahome = System.getProperty("java.home")
+            var javaexe = javahome + File.separator + "bin" + File.separator + "java"
+            if (System.getProperty("os.name").toLowerCase().contains("win") && !System.getProperty("os.name").toLowerCase().contains("darwin")) {
+                javaexe += ".exe"
+            }
+            var processBuilder = new ProcessBuilder(
+                    javaexe,
+                    "-Dretrolambda.inputDir=${compileJava.destinationDir.toString().replace("\\", "\\\\").replace(" ", "\\ ")}",
+                    "-Dretrolambda.classpath=${classpathString.replace("\\", "\\\\").replace(" ", "\\ ")}",
+                    "-Dretrolambda.defaultMethods=true",
+                    "-Dretrolambda.bytecodeVersion=51",
+                    "-javaagent:${retrolambdaFile.absolutePath.toString().replace("\\", "\\\\").replace(" ", "\\ ")}",
+                    "-jar",
+                    retrolambdaFile.absolutePath.toString().replace("\\", "\\\\").replace(" ", "\\ "),
+            )
+            var outputLog = new File("${rootProject.buildDir}/retrolambda/${project.path.replace(":", "_")}output.log")
+            processBuilder.redirectOutput(outputLog)
+            processBuilder.redirectError(outputLog)
+            var process = processBuilder.start()
+            process.waitFor()
+            if (process.exitValue() != 0) {
+                throw new GradleException("RetroLambda failed with exit code " + process.exitValue())
+            }
         }
     }
 }
