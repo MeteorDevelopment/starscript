@@ -1,7 +1,14 @@
 package meteordevelopment.starscript;
 
 public class Section {
-    private static final ThreadLocal<StringBuilder> SB = ThreadLocal.withInitial(StringBuilder::new);
+    // DNT: Java 7 Support needs this
+    @SuppressWarnings("AnonymousHasLambdaAlternative")
+    private static final ThreadLocal<StringBuilder> SB =
+            new ThreadLocal<StringBuilder>() {
+                @Override protected StringBuilder initialValue() {
+                    return new StringBuilder();
+                }
+            };
 
     public final int index;
     public final String text;
