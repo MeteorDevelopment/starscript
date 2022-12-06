@@ -6,5 +6,6 @@ public enum ValueType {
     Number,
     String,
     Function,
-    Map
+    Map,
+    Object
 }

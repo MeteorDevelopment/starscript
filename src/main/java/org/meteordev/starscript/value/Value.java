@@ -34,6 +34,9 @@ public class Value {
     public static Value map(ValueMap fields) {
         return new Map(fields);
     }
+    public static Value object(java.lang.Object object) {
+        return new Object(object);
+    }
 
     public boolean isNull() {
         return type == ValueType.Null;
@@ -53,6 +56,9 @@ public class Value {
     public boolean isMap() {
         return type == ValueType.Map;
     }
+    public boolean isObject() {
+        return type == ValueType.Object;
+    }
 
     public boolean getBool() {
         return ((Boolean) this).bool;
@@ -69,6 +75,9 @@ public class Value {
     public ValueMap getMap() {
         return ((Map) this).fields;
     }
+    public java.lang.Object getObject() {
+        return ((Object) this).object;
+    }
 
     public boolean isTruthy() {
         switch (type) {
@@ -78,12 +87,13 @@ public class Value {
             case Number:
             case String:
             case Function:
-            case Map:      return true;
+            case Map:
+            case Object:   return true;
         }
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(java.lang.Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
@@ -97,20 +107,22 @@ public class Value {
             case String:   return getString().equals(value.getString());
             case Function: return getFunction() == value.getFunction();
             case Map:      return getMap() == value.getMap();
+            case Object:   return getObject().equals(value.getObject());
             default:       return false;
         }
     }
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
+        int result = 31 * super.hashCode();
 
         switch (type) {
-            case Boolean:  result = 31 * result + (getBool() ? 1 : 0); break;
-            case Number:   long temp = Double.doubleToLongBits(getNumber()); result = 31 * result + (int) (temp ^ (temp >>> 32)); break;
-            case String:   String string = getString(); result = 31 * result + string.hashCode(); break;
-            case Function: result = 31 * result + getFunction().hashCode(); break;
-            case Map:      result = 31 * result + getMap().hashCode(); break;
+            case Boolean:  result += java.lang.Boolean.hashCode(getBool()); break;
+            case Number:   result += Double.hashCode(getNumber()); break;
+            case String:   result += getString().hashCode(); break;
+            case Function: result += getFunction().hashCode(); break;
+            case Map:      result += getMap().hashCode(); break;
+            case Object:   result += getObject().hashCode(); break;
         }
 
         return result;
@@ -128,6 +140,7 @@ public class Value {
                 Supplier<Value> s = getMap().getRaw("_toString");
                 return s == null ? "<map>" : s.get().toString();
             }
+            case Object:   return getObject().toString();
             default:       return "";
         }
     }
@@ -174,6 +187,15 @@ public class Value {
         public Map(ValueMap fields) {
             super(ValueType.Map);
             this.fields = fields;
+        }
+    }
+
+    private static class Object extends Value {
+        private final java.lang.Object object;
+
+        public Object(java.lang.Object object) {
+            super(ValueType.Object);
+            this.object = object;
         }
     }
 }

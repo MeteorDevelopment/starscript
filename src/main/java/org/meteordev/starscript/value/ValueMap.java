@@ -82,6 +82,11 @@ public class ValueMap {
         return set(name, Value.map(map));
     }
 
+    /** Sets an object variable supplier that always returns the same value for the provided name. <br><br> See {@link #set(String, Supplier)} for dot notation. */
+    public ValueMap set(String name, Object object) {
+        return set(name, Value.object(object));
+    }
+
     /**
      * Gets the variable supplier for the provided name. <br><br>
      *

@@ -154,6 +154,13 @@ public class Starscript {
         return a.getString();
     }
 
+    /** Pops a value from the stack and returns it as Object. Calls {@link Starscript#error(String, Object...)} with the provided message if the value is not Object. */
+    public Object popObject(String errorMsg) {
+        Value a = pop();
+        if (!a.isObject()) error(errorMsg);
+        return a.getString();
+    }
+
     // Helpers
 
     /** Throws a {@link StarscriptError}. */
@@ -196,6 +203,11 @@ public class Starscript {
     /** Sets a map variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
     public ValueMap set(String name, ValueMap map) {
         return globals.set(name, map);
+    }
+
+    /** Sets an object variable supplier that always returns the same value for the provided name. <br><br> See {@link ValueMap#set(String, Supplier)} for dot notation. */
+    public ValueMap set(String name, Object object) {
+        return globals.set(name, object);
     }
 
     /** Removes all values from the globals. */
