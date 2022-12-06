@@ -158,7 +158,7 @@ public class Starscript {
     public Object popObject(String errorMsg) {
         Value a = pop();
         if (!a.isObject()) error(errorMsg);
-        return a.getString();
+        return a.getObject();
     }
 
     // Helpers
