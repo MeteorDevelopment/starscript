@@ -3,7 +3,6 @@ package org.meteordev.starscript;
 import org.meteordev.starscript.compiler.Compiler;
 import org.meteordev.starscript.compiler.Parser;
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -68,18 +67,18 @@ public class Benchmark {
     }
 
     @org.openjdk.jmh.annotations.Benchmark
-    public void format(Blackhole bh) {
-        bh.consume(String.format(formatSource, 59.68223));
+    public String format() {
+        return String.format(formatSource, 59.68223);
     }
 
     @org.openjdk.jmh.annotations.Benchmark
-    public void formatter(Blackhole bh) {
+    public String formatter() {
         sb.setLength(0);
-        bh.consume(formatter.format(formatSource, 59.68223).toString());
+        return formatter.format(formatSource, 59.68223).toString();
     }
 
     @org.openjdk.jmh.annotations.Benchmark
-    public void starscript(Blackhole bh) {
-        bh.consume(ss.run(script, sb).toString());
+    public String starscript() {
+        return ss.run(script, sb).toString();
     }
 }
