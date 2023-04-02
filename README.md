@@ -22,7 +22,7 @@ Gradle:
 repositories {
     maven {
         name = "meteor-maven"
-        url = "https://maven.meteordev.org"
+        url = "https://maven.meteordev.org/releases"
     }
 }
 
