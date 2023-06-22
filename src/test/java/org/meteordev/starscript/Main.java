@@ -39,5 +39,9 @@ public class Main {
 
         System.out.println("Input: " + source);
         System.out.println("Output: " + ss.run(script));
+
+        ss.remove("player.name");
+
+        System.out.println("Output #2: " + ss.run(script));
     }
 }
