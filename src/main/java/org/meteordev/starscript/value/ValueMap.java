@@ -132,12 +132,12 @@ public class ValueMap {
     }
 
     /**
-     * Removes a single value with the specified name from this map. <br><br>
+     * Removes a single value with the specified name from this map and returns the removed value. <br><br>
      *
      * <strong>Dot Notation:</strong><br>
      * If the name is for example 'player.name' then it attempts to get a value with the name 'player' from this map and calls .remove("name") on the second map. If `player` is not a map then the last param is removed. See {@link #set(String, Supplier)}.
      */
-    public ValueMap remove(String name) {
+    public Supplier<Value> remove(String name) {
         int dotI = name.indexOf('.');
 
         if (dotI >= 0) {
@@ -147,16 +147,14 @@ public class ValueMap {
 
             // Get child value
             Supplier<Value> valueSupplier = values.get(name1);
-            if (valueSupplier == null) return this;
+            if (valueSupplier == null) return null;
             else {
                 // Make sure the child value is a map
                 Value value = valueSupplier.get();
-                if (!value.isMap()) values.remove(name1);
-                else value.getMap().remove(name2);
+                if (!value.isMap()) return values.remove(name1);
+                else return value.getMap().remove(name2);
             }
         }
-        else values.remove(name);
-
-        return this;
+        else return values.remove(name);
     }
 }

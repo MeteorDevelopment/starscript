@@ -215,9 +215,9 @@ public class Starscript {
         globals.clear();
     }
 
-    /** Removes a single value with the specified name from the globals. <br><br> See {@link ValueMap#remove(String)} for dot notation. */
-    public void remove(String name) {
-        globals.remove(name);
+    /** Removes a single value with the specified name from the globals and returns the removed value. <br><br> See {@link ValueMap#remove(String)} for dot notation. */
+    public Supplier<Value> remove(String name) {
+        return globals.remove(name);
     }
 
     /** Returns the underlying {@link ValueMap} for global variables. */
