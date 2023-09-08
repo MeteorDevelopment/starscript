@@ -67,9 +67,9 @@ public class Starscript {
                 case Get:               { String name = script.constants.get(script.code[ip++]).getString(); Value v = pop(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); push(s != null ? s.get() : Value.null_()); break; }
                 case Call:              { int argCount = script.code[ip++]; Value a = peek(argCount); if (a.isFunction()) { Value r = a.getFunction().run(this, argCount); pop(); push(r); } else error("Tried to call a %s, can only call functions.", a.type); break; }
 
-                case Jump:              { int jump = ((script.code[ip++] << 8) & 0xFF) | (script.code[ip++] & 0xFF); ip += jump; break; }
-                case JumpIfTrue:        { int jump = ((script.code[ip++] << 8) & 0xFF) | (script.code[ip++] & 0xFF); if (peek().isTruthy()) ip += jump; break; }
-                case JumpIfFalse:       { int jump = ((script.code[ip++] << 8) & 0xFF) | (script.code[ip++] & 0xFF); if (!peek().isTruthy()) ip += jump; break; }
+                case Jump:              { int jump = ((script.code[ip++] & 0xFF) << 8) | (script.code[ip++] & 0xFF); ip += jump; break; }
+                case JumpIfTrue:        { int jump = ((script.code[ip++] & 0xFF) << 8) | (script.code[ip++] & 0xFF); if (peek().isTruthy()) ip += jump; break; }
+                case JumpIfFalse:       { int jump = ((script.code[ip++] & 0xFF) << 8) | (script.code[ip++] & 0xFF); if (!peek().isTruthy()) ip += jump; break; }
 
                 case Section:           if (firstSection == null) { firstSection = new Section(index, sb.toString()); section = firstSection; } else { section.next = new Section(index, sb.toString()); section = section.next; } sb.setLength(0); index = script.code[ip++]; break;
 
