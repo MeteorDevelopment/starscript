@@ -83,12 +83,12 @@ public class Lexer {
                 expressionDepth++;
                 createToken(Token.LeftBrace);
             }
-            else if (c == '#') {
+            else if (c == '#' && isDigit(peek())) {
                 while (isDigit(peek())) advance();
                 createToken(Token.Section, source.substring(start + 1, current));
             }
             else {
-                while (!isAtEnd() && peek() != '{' && peek() != '#') {
+                while (!isAtEnd() && peek() != '{' && (peek() != '#' || !isDigit(peekNext()))) {
                     if (peek() == '\n') line++;
                     advance();
                 }
