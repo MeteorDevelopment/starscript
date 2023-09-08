@@ -97,7 +97,7 @@ public class Script {
                     case Get:
                     case GetAppend:
                     case Constant:
-                    case ConstantAppend:    i++; out.append(String.format("%3d '%s'", code[i], constants.get(code[i]))); break;
+                    case ConstantAppend:    i++; out.append(String.format("%3d '%s'", code[i], constants.get(code[i] & 0xFF))); break;
                     case Call:
                     case CallAppend:        i++; out.append(String.format("%3d %s", code[i], code[i] == 1 ? "argument" : "arguments")); break;
                     case Jump:
@@ -105,7 +105,7 @@ public class Script {
                     case JumpIfFalse:       i += 2; out.append(String.format("%3d -> %d", i - 2, i + 1 + (((code[i - 1] << 8) & 0xFF) | (code[i] & 0xFF)))); break;
                     case Section:           i++; out.append(String.format("%3d", code[i])); break;
                     case VariableGet:
-                    case VariableGetAppend: i += 2; out.append(String.format("%3d.%-3d '%s.%s'", code[i - 1], code[i], constants.get(code[i - 1]), constants.get(code[i]))); break;
+                    case VariableGetAppend: i += 2; out.append(String.format("%3d.%-3d '%s.%s'", code[i - 1], code[i], constants.get(code[i - 1] & 0xFF), constants.get(code[i] & 0xFF))); break;
                 }
 
                 out.append('\n');

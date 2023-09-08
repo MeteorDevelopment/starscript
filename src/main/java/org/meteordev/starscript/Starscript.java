@@ -38,7 +38,7 @@ public class Starscript {
         loop:
         while (true) {
             switch (Instruction.valueOf(script.code[ip++])) {
-                case Constant:          push(script.constants.get(script.code[ip++])); break;
+                case Constant:          push(script.constants.get(script.code[ip++] & 0xFF)); break;
                 case Null:              push(Value.null_()); break;
                 case True:              push(Value.bool(true)); break;
                 case False:             push(Value.bool(false)); break;
@@ -50,7 +50,7 @@ public class Starscript {
                 case Modulo:            { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number(a.getNumber() % b.getNumber())); else error("Can only modulo 2 numbers."); break; }
                 case Power:             { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number(Math.pow(a.getNumber(), b.getNumber()))); else error("Can only power 2 numbers."); break; }
 
-                case AddConstant:       { Value b = script.constants.get(script.code[ip++]); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number(a.getNumber() + b.getNumber())); else if (a.isString()) push(Value.string(a.getString() + b.toString())); else error("Can only add 2 numbers or 1 string and other value."); break; }
+                case AddConstant:       { Value b = script.constants.get(script.code[ip++] & 0xFF); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number(a.getNumber() + b.getNumber())); else if (a.isString()) push(Value.string(a.getString() + b.toString())); else error("Can only add 2 numbers or 1 string and other value."); break; }
 
                 case Pop:               pop(); break;
                 case Not:               push(Value.bool(!pop().isTruthy())); break;
@@ -63,8 +63,8 @@ public class Starscript {
                 case Less:              { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.bool(a.getNumber() < b.getNumber())); else error("This operation requires 2 number."); break; }
                 case LessEqual:         { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.bool(a.getNumber() <= b.getNumber())); else error("This operation requires 2 number."); break; }
 
-                case Variable:          { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = globals.getRaw(name); push(s != null ? s.get() : Value.null_()); break; }
-                case Get:               { String name = script.constants.get(script.code[ip++]).getString(); Value v = pop(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); push(s != null ? s.get() : Value.null_()); break; }
+                case Variable:          { String name = script.constants.get(script.code[ip++] & 0xFF).getString(); Supplier<Value> s = globals.getRaw(name); push(s != null ? s.get() : Value.null_()); break; }
+                case Get:               { String name = script.constants.get(script.code[ip++] & 0xFF).getString(); Value v = pop(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); push(s != null ? s.get() : Value.null_()); break; }
                 case Call:              { int argCount = script.code[ip++]; Value a = peek(argCount); if (a.isFunction()) { Value r = a.getFunction().run(this, argCount); pop(); push(r); } else error("Tried to call a %s, can only call functions.", a.type); break; }
 
                 case Jump:              { int jump = ((script.code[ip++] & 0xFF) << 8) | (script.code[ip++] & 0xFF); ip += jump; break; }
@@ -74,21 +74,21 @@ public class Starscript {
                 case Section:           if (firstSection == null) { firstSection = new Section(index, sb.toString()); section = firstSection; } else { section.next = new Section(index, sb.toString()); section = section.next; } sb.setLength(0); index = script.code[ip++]; break;
 
                 case Append:            sb.append(pop().toString()); break;
-                case ConstantAppend:    sb.append(script.constants.get(script.code[ip++]).toString()); break;
-                case VariableAppend:    { Supplier<Value> s = globals.getRaw(script.constants.get(script.code[ip++]).getString()); sb.append((s == null ? Value.null_() : s.get()).toString()); break; }
-                case GetAppend:         { String name = script.constants.get(script.code[ip++]).getString(); Value v = pop(); if (!v.isMap()) { sb.append(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); sb.append((s != null ? s.get() : Value.null_()).toString()); break; }
+                case ConstantAppend:    sb.append(script.constants.get(script.code[ip++] & 0xFF).toString()); break;
+                case VariableAppend:    { Supplier<Value> s = globals.getRaw(script.constants.get(script.code[ip++] & 0xFF).getString()); sb.append((s == null ? Value.null_() : s.get()).toString()); break; }
+                case GetAppend:         { String name = script.constants.get(script.code[ip++] & 0xFF).getString(); Value v = pop(); if (!v.isMap()) { sb.append(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); sb.append((s != null ? s.get() : Value.null_()).toString()); break; }
                 case CallAppend:        { int argCount = script.code[ip++]; Value a = peek(argCount); if (a.isFunction()) { Value r = a.getFunction().run(this, argCount); pop(); sb.append(r.toString()); } else error("Tried to call a %s, can only call functions.", a.type); break; }
 
                 case VariableGet:       {
                     Value v;
-                    { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = globals.getRaw(name); v = s != null ? s.get() : Value.null_(); } // Variable
-                    { String name = script.constants.get(script.code[ip++]).getString(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); push(s != null ? s.get() : Value.null_()); } // Get
+                    { String name = script.constants.get(script.code[ip++] & 0xFF).getString(); Supplier<Value> s = globals.getRaw(name); v = s != null ? s.get() : Value.null_(); } // Variable
+                    { String name = script.constants.get(script.code[ip++] & 0xFF).getString(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); push(s != null ? s.get() : Value.null_()); } // Get
                     break;
                 }
                 case VariableGetAppend: {
                     Value v;
-                    { String name = script.constants.get(script.code[ip++]).getString(); Supplier<Value> s = globals.getRaw(name); v = s != null ? s.get() : Value.null_(); } // Variable
-                    { String name = script.constants.get(script.code[ip++]).getString(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); v = s != null ? s.get() : Value.null_(); } // Get
+                    { String name = script.constants.get(script.code[ip++] & 0xFF).getString(); Supplier<Value> s = globals.getRaw(name); v = s != null ? s.get() : Value.null_(); } // Variable
+                    { String name = script.constants.get(script.code[ip++] & 0xFF).getString(); if (!v.isMap()) { push(Value.null_()); break; } Supplier<Value> s = v.getMap().getRaw(name); v = s != null ? s.get() : Value.null_(); } // Get
                     { sb.append(v.toString()); } // Append
                     break;
                 }
