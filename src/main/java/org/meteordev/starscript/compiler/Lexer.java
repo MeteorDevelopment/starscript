@@ -79,18 +79,23 @@ public class Lexer {
             char c = advance();
             if (c == '\n') line++;
 
-            if (c == '{') {
+            if (canStartExpression(c, peek())) {
                 expressionDepth++;
                 createToken(Token.LeftBrace);
             }
-            else if (c == '#' && isDigit(peek())) {
+            else if (canStartSection(c, peek())) {
                 while (isDigit(peek())) advance();
                 createToken(Token.Section, source.substring(start + 1, current));
             }
             else {
-                while (!isAtEnd() && peek() != '{' && (peek() != '#' || !isDigit(peekNext()))) {
+                while (!isAtEnd() && !canStartExpression(peek(), peekNext()) && !canStartSection(peek(), peekNext())) {
                     if (peek() == '\n') line++;
-                    advance();
+
+                    char advanced = advance();
+
+                    if ((advanced == '{' && peek() == '{') || (advanced == '#' && peek() == '#')) {
+                        advance();
+                    }
                 }
 
                 createToken(Token.String);
@@ -137,6 +142,14 @@ public class Lexer {
             case "and":   token = Token.And; break;
             case "or":    token = Token.Or; break;
         }
+    }
+
+    private boolean canStartExpression(char c1, char c2) {
+        return c1 == '{' && c2 != '{';
+    }
+
+    private boolean canStartSection(char c1, char c2) {
+        return c1 == '#' && isDigit(c2);
     }
 
     private void skipWhitespace() {
