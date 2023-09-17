@@ -1,37 +1,54 @@
 package org.meteordev.starscript.utils;
 
+import java.util.Arrays;
+
 public class Stack<T> {
-    @SuppressWarnings("unchecked")
-    private T[] items = (T[]) new Object[8];
+    private Object[] items = new Object[8];
     private int size;
 
     public void clear() {
-        for (int i = 0; i < size; i++) items[i] = null;
+        // Set all elements to null, starting from the last used index
+        for (int i = size - 1; i >= 0; i--) {
+            items[i] = null;
+        }
         size = 0;
     }
 
-    @SuppressWarnings("unchecked")
     public void push(T item) {
         if (size >= items.length) {
-            T[] newItems = (T[]) new Object[items.length * 2];
-            System.arraycopy(items, 0, newItems, 0, items.length);
-            items = newItems;
+            int newCapacity = items.length * 2; // increase capacity by doubling it
+            items = Arrays.copyOf(items, newCapacity);
         }
 
         items[size++] = item;
     }
 
     public T pop() {
-        T item = items[--size];
-        items[size] = null;
+        if (size <= 0) {
+            throw new IllegalStateException("Stack is empty.");
+        }
+
+        @SuppressWarnings("unchecked")
+        T item = (T) items[--size];
+        items[size] = null; // avoid memory leak by nullifying reference
         return item;
     }
 
     public T peek() {
-        return items[size - 1];
+        if (size <= 0) {
+            throw new IllegalStateException("Stack is empty.");
+        }
+        @SuppressWarnings("unchecked")
+        T item = (T) items[size - 1];
+        return item;
     }
 
     public T peek(int offset) {
-        return items[size - 1 - offset];
+        if (size <= offset) {
+            throw new IllegalArgumentException("Offset is greater than or equal to the stack size.");
+        }
+        @SuppressWarnings("unchecked")
+        T item = (T) items[size - 1 - offset];
+        return item;
     }
 }

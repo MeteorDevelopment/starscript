@@ -29,30 +29,44 @@ public class VariableReplacementTransformer extends AbstractExprVisitor {
     @Override
     public void visitGet(Expr.Get expr) {
         String name = getFullName(expr);
-        if (name != null) tryReplace(expr, name);
+
+        if (name != null) {
+            tryReplace(expr, name);
+        }
     }
 
     private void tryReplace(Expr expr, String name) {
         Supplier<String> replacer = replacers.get(name);
-        if (replacer == null) return;
+
+        if (replacer == null) {
+            return;
+        }
 
         Expr replacement = createReplacement(replacer.get());
         expr.replace(replacement);
     }
 
+
     private Expr createReplacement(String replacement) {
         String[] parts = replacement.split("\\.");
-        if (parts.length == 0) throw new IllegalStateException("Cannot replace with an empty replacement");
+
+        if (parts.length == 0) {
+            throw new IllegalStateException("Cannot replace with an empty replacement");
+        }
 
         Expr expr = null;
 
         for (int i = 0; i < parts.length; i++) {
-            if (i == 0) expr = new Expr.Variable(0, 0, parts[i]);
-            else expr = new Expr.Get(0, 0, expr, parts[i]);
+            if (i == 0) {
+                expr = new Expr.Variable(0, 0, parts[i]);
+            } else {
+                expr = new Expr.Get(0, 0, expr, parts[i]);
+            }
         }
 
         return expr;
     }
+
 
     private String getFullName(Expr.Get expr) {
         try {
@@ -70,11 +84,16 @@ public class VariableReplacementTransformer extends AbstractExprVisitor {
     }
 
     private void getFullNameImpl(Expr.Get expr) {
-        if (expr.getObject() instanceof Expr.Get) getFullNameImpl((Expr.Get) expr.getObject());
-        else if (expr.getObject() instanceof Expr.Variable) sb.append(((Expr.Variable) expr.getObject()).name);
-        else throw new IllegalStateException();
+        if (expr.getObject() instanceof Expr.Get) {
+            getFullNameImpl((Expr.Get) expr.getObject());
+        } else if (expr.getObject() instanceof Expr.Variable) {
+            sb.append(((Expr.Variable) expr.getObject()).name);
+        } else {
+            throw new IllegalStateException("Invalid expression type in getFullNameImpl.");
+        }
 
         sb.append('.');
         sb.append(expr.name);
     }
+
 }

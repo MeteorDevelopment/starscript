@@ -18,38 +18,43 @@ public class ValueMap {
      * If the name contains a dot it is automatically split into separate value maps. For example the name 'player.name' will not put a single string value with the name 'player.name' into this value map but another value map with the name 'player' and then inside that a string value with the name 'name'. If there already is a value named 'player' and it is a map, it just adds to that existing map, otherwise it replaces the value.
      */
     public ValueMap set(String name, Supplier<Value> supplier) {
-        int dotI = name.indexOf('.');
+        // Check if the name contains a dot
+        int dotIndex = name.indexOf('.');
 
-        if (dotI >= 0) {
-            // Split name based on the dot
-            String name1 = name.substring(0, dotI);
-            String name2 = name.substring(dotI + 1);
+        if (dotIndex >= 0) {
+            // If it contains a dot, split the name into two parts
+            String parentName = name.substring(0, dotIndex);
+            String childName = name.substring(dotIndex + 1);
 
-            // Get the map
+            // Get the map or create a new one if it doesn't exist
             ValueMap map;
-            Supplier<Value> valueSupplier = values.get(name1);
+            Supplier<Value> parentSupplier = values.get(parentName);
 
-            if (valueSupplier == null) {
+            if (parentSupplier == null) {
                 map = new ValueMap();
-                values.put(name1, () -> Value.map(map));
-            }
-            else {
-                Value value = valueSupplier.get();
+                values.put(parentName, () -> Value.map(map));
+            } else {
+                Value parentValue = parentSupplier.get();
 
-                if (value.isMap()) map = value.getMap();
-                else {
+                if (parentValue.isMap()) {
+                    map = parentValue.getMap();
+                } else {
                     map = new ValueMap();
-                    values.put(name1, () -> Value.map(map));
+                    values.put(parentName, () -> Value.map(map));
                 }
             }
 
-            // Set the supplier
-            map.set(name2, supplier);
+            // Set the supplier for the child value
+            map.set(childName, supplier);
+        } else {
+            // If there's no dot in the name, directly set the supplier
+            values.put(name, supplier);
         }
-        else values.put(name, supplier);
 
+        // Return the updated ValueMap
         return this;
     }
+
 
     /** Sets a variable supplier that always returns the same value for the provided name. <br><br> See {@link #set(String, Supplier)} for dot notation. */
     public ValueMap set(String name, Value value) {
@@ -94,27 +99,38 @@ public class ValueMap {
      * If the name is for example 'player.name' then it gets a value with the name 'player' from this map and calls .get() with 'name' on the second map. If 'player' is not a map then returns null. See {@link #set(String, Supplier)}.
      */
     public Supplier<Value> get(String name) {
-        int dotI = name.indexOf('.');
+        // Check if the name contains a dot
+        int dotIndex = name.indexOf('.');
 
-        if (dotI >= 0) {
-            // Split name based on the dot
-            String name1 = name.substring(0, dotI);
-            String name2 = name.substring(dotI + 1);
+        if (dotIndex >= 0) {
+            // If it contains a dot, split the name into two parts
+            String parentName = name.substring(0, dotIndex);
+            String childName = name.substring(dotIndex + 1);
 
-            // Get child value
-            Supplier<Value> valueSupplier = values.get(name1);
-            if (valueSupplier == null) return null;
+            // Get the Supplier for the parent value
+            Supplier<Value> parentSupplier = values.get(parentName);
 
-            // Make sure the child value is a map
-            Value value = valueSupplier.get();
-            if (!value.isMap()) return null;
+            // If the parent Supplier is not found, return null
+            if (parentSupplier == null) {
+                return null;
+            }
 
-            // Get value from the child map
-            return value.getMap().get(name2);
+            // Get the actual Value from the parent Supplier
+            Value parentValue = parentSupplier.get();
+
+            // Check if the parent Value is a map
+            if (!parentValue.isMap()) {
+                return null;
+            }
+
+            // Get the child Value from the parent Map
+            return parentValue.getMap().get(childName);
+        } else {
+            // If there's no dot in the name, directly get the Supplier from the map
+            return values.get(name);
         }
-
-        return values.get(name);
     }
+
 
     /** Gets the variable supplier for the provided name. */
     public Supplier<Value> getRaw(String name) {
@@ -138,23 +154,42 @@ public class ValueMap {
      * If the name is for example 'player.name' then it attempts to get a value with the name 'player' from this map and calls .remove("name") on the second map. If `player` is not a map then the last param is removed. See {@link #set(String, Supplier)}.
      */
     public Supplier<Value> remove(String name) {
-        int dotI = name.indexOf('.');
+        // Check if the name contains a dot
+        int dotIndex = name.indexOf('.');
 
-        if (dotI >= 0) {
-            // Split name based on the dot
-            String name1 = name.substring(0, dotI);
-            String name2 = name.substring(dotI + 1);
+        if (dotIndex >= 0) {
+            // If it contains a dot, split the name into two parts
+            String parentName = name.substring(0, dotIndex);
+            String childName = name.substring(dotIndex + 1);
 
-            // Get child value
-            Supplier<Value> valueSupplier = values.get(name1);
-            if (valueSupplier == null) return null;
-            else {
-                // Make sure the child value is a map
-                Value value = valueSupplier.get();
-                if (!value.isMap()) return values.remove(name1);
-                else return value.getMap().remove(name2);
+            // Get the Supplier for the parent value
+            Supplier<Value> parentSupplier = values.get(parentName);
+
+            if (parentSupplier == null) {
+                // If the parent Supplier is not found, return null
+                return null;
+            } else {
+                // Get the actual Value from the parent Supplier
+                Value parentValue = parentSupplier.get();
+
+                if (!parentValue.isMap()) {
+                    // If the parent Value is not a map, remove the parent entry
+                    return values.remove(parentName);
+                } else {
+                    // Get the child Value from the parent Map
+                    Supplier<Value> childSupplier = parentValue.getMap().remove(childName);
+                    if (childSupplier != null) {
+                        return childSupplier;
+                    } else {
+                        // If the child Value is not found, return null
+                        return null;
+                    }
+                }
             }
+        } else {
+            // If there's no dot in the name, directly remove the entry
+            return values.remove(name);
         }
-        else return values.remove(name);
     }
+
 }

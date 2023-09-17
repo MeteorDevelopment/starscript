@@ -20,6 +20,7 @@ public class Error {
 
     @Override
     public String toString() {
-        return String.format("[line %d, character %d] at '%s': %s", line, character, ch, message);
+        String charString = Character.toString(ch);
+        return String.format("[line %d, character %d] at '%s': %s", line, character, charString, message);
     }
 }

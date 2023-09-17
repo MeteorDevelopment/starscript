@@ -116,11 +116,13 @@ public class SemanticTokenProvider {
         @Override
         public void visitVariable(Expr.Variable expr) {
             if (!(expr.parent instanceof Expr.Get)) {
-                tokens.add(new SemanticToken(SemanticTokenType.Identifier, expr.end - expr.name.length(), expr.end));
+                int nameStart = expr.end - expr.name.length();
+                tokens.add(new SemanticToken(SemanticTokenType.Identifier, nameStart, expr.end));
             }
 
             super.visitVariable(expr);
         }
+
 
         @Override
         public void visitGet(Expr.Get expr) {
