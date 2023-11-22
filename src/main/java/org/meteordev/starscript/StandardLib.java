@@ -114,10 +114,14 @@ public class StandardLib {
         double a = ss.popNumber("Second argument to xor() needs to be a number.");
         double b = ss.popNumber("First argument to xor() needs to be a number.");
 
-        long longBits1 = Double.doubleToLongBits(a);
-        long longBits2 = Double.doubleToLongBits(b);
+        long long1 = (long) a;
+        long long2 = (long) b;
 
-        return Value.number(Double.longBitsToDouble(longBits1 ^ longBits2));
+        if (a != long1 || b != long2) {
+            ss.error("Xor expects only non-decimal values");
+        }
+
+        return Value.number(long1 ^ long2);
     }
 
     // Strings
