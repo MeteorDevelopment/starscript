@@ -17,6 +17,7 @@ public class StandardLib {
     public static void init(Starscript ss) {
         // Variables
         ss.set("PI", Math.PI);
+        ss.set("EULER", Math.E);
         ss.set("time", () -> Value.string(timeFormat.format(new Date())));
         ss.set("date", () -> Value.string(dateFormat.format(new Date())));
 
@@ -27,6 +28,7 @@ public class StandardLib {
         ss.set("ceil", StandardLib::ceil);
         ss.set("abs", StandardLib::abs);
         ss.set("random", StandardLib::random);
+        ss.set("xor", StandardLib::xor);
 
         // Strings
         ss.set("string", StandardLib::string);
@@ -104,6 +106,22 @@ public class StandardLib {
 
         ss.error("random() requires 0 or 2 arguments, got %d.", argCount);
         return Value.null_();
+    }
+
+    public static Value xor(Starscript ss, int argCount) {
+        if (argCount != 2) ss.error("xor() requires 2 argument, got %d.", argCount);
+
+        double a = ss.popNumber("Second argument to xor() needs to be a number.");
+        double b = ss.popNumber("First argument to xor() needs to be a number.");
+
+        long long1 = (long) a;
+        long long2 = (long) b;
+
+        if (a != long1 || b != long2) {
+            ss.error("Xor expects only non-decimal values");
+        }
+
+        return Value.number(long1 ^ long2);
     }
 
     // Strings
