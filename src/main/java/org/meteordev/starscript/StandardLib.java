@@ -3,7 +3,9 @@ package org.meteordev.starscript;
 import org.meteordev.starscript.value.Value;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.IllegalFormatException;
 import java.util.Random;
 
 /** Standard library with some default functions and variables. */
@@ -35,6 +37,10 @@ public class StandardLib {
         ss.set("contains", StandardLib::contains);
         ss.set("replace", StandardLib::replace);
         ss.set("pad", StandardLib::pad);
+
+        // Formatters
+        ss.set("formatDateTime", StandardLib::formatDateTime);
+        ss.set("format", StandardLib::format);
     }
 
     // Numbers
@@ -165,5 +171,45 @@ public class StandardLib {
         }
 
         return Value.string(new String(padded));
+    }
+
+    public static Value formatDateTime(Starscript ss, int argCount) {
+        if (argCount != 1) ss.error("formatTime() requires 1 argument, got %d.", argCount);
+        try {
+            String fmt = ss.popString("Argument to formatTime(fmt) needs to be a string.");
+            SimpleDateFormat formatter = new SimpleDateFormat(fmt);
+            return Value.string(formatter.format(new Date()));
+        }
+        catch (IllegalArgumentException e) {
+            ss.error(e.toString());
+        }
+        return Value.null_();
+    }
+
+    public static Value format(Starscript ss, int argCount) {
+        if (argCount < 1) ss.error("format(fmt, ...args) requires at least 1 argument, got %d.", argCount);
+        ArrayList<Object> args = new ArrayList<Object>();
+        for (int i = 1; i < argCount; i ++) {
+            Value v = ss.pop();
+            Object o = null;
+            switch (v.type) {
+                case Null: o = Value.null_(); break;
+                case Boolean: o = v.getBool(); break;
+                case Number: o = v.getNumber(); break;
+                case String: o = v.getString(); break;
+                case Function: o = v.getFunction(); break;
+                case Map: o = v.getMap(); break;
+                default: break;
+            }
+            args.add(0, o);
+        }
+        String fmt = ss.popString("Argument `fmt` to format() needs to be a string.");
+        try {
+            return Value.string(String.format(fmt, args.toArray()));
+        }
+        catch (IllegalFormatException e) {
+            ss.error(e.toString());
+        }
+        return Value.null_();
     }
 }
