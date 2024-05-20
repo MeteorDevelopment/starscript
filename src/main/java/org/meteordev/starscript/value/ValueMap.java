@@ -5,11 +5,12 @@ import org.meteordev.starscript.utils.SFunction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 /** Simpler wrapper around a map that goes from {@link String} to {@link Supplier} for {@link Value}. */
 public class ValueMap {
-    private final Map<String, Supplier<Value>> values = new HashMap<>();
+    private final Map<String, Supplier<Value>> values = new ConcurrentHashMap<>();
 
     /**
      * Sets a variable supplier for the provided name. <br><br>
