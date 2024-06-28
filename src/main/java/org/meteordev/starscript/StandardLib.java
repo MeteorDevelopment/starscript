@@ -193,12 +193,12 @@ public class StandardLib {
             Value v = ss.pop();
             Object o = null;
             switch (v.type) {
-                case Null: o = Value.null_(); break;
                 case Boolean: o = v.getBool(); break;
                 case Number: o = v.getNumber(); break;
                 case String: o = v.getString(); break;
                 case Function: o = v.getFunction(); break;
                 case Map: o = v.getMap(); break;
+                case Null:
                 default: break;
             }
             args.add(0, o);
