@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.IllegalFormatException;
 import java.util.Random;
+import java.util.TimeZone;
 
 /** Standard library with some default functions and variables. */
 public class StandardLib {
@@ -174,10 +175,13 @@ public class StandardLib {
     }
 
     public static Value formatDateTime(Starscript ss, int argCount) {
-        if (argCount != 1) ss.error("formatTime() requires 1 argument, got %d.", argCount);
+        if (argCount < 1 || argCount > 2) ss.error("formatTime(fmt, timezone) requires 1 to 2 arguments, got %d.", argCount);
         try {
-            String fmt = ss.popString("Argument to formatTime(fmt) needs to be a string.");
+            String timeZone = null;
+            if (argCount == 2) timeZone = ss.popString("Argument to formatTime(fmt, timezone) needs to be a string.");
+            String fmt = ss.popString("Argument to formatTime(fmt, timezone) needs to be a string.");
             SimpleDateFormat formatter = new SimpleDateFormat(fmt);
+            if (timeZone != null && !timeZone.isEmpty()) formatter.setTimeZone(TimeZone.getTimeZone(timeZone));
             return Value.string(formatter.format(new Date()));
         }
         catch (IllegalArgumentException e) {
