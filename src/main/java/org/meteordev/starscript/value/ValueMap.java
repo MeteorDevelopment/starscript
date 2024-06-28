@@ -5,11 +5,12 @@ import org.meteordev.starscript.utils.SFunction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 /** Simpler wrapper around a map that goes from {@link String} to {@link Supplier} for {@link Value}. */
 public class ValueMap {
-    private final Map<String, Supplier<Value>> values = new HashMap<>();
+    private final Map<String, Supplier<Value>> values = new ConcurrentHashMap<>();
 
     /**
      * Sets a variable supplier for the provided name. <br><br>
@@ -27,11 +28,11 @@ public class ValueMap {
 
             // Get the map
             ValueMap map;
-            Supplier<Value> valueSupplier = values.get(name1);
+            Supplier<Value> valueSupplier = getRaw(name1);
 
             if (valueSupplier == null) {
                 map = new ValueMap();
-                values.put(name1, () -> Value.map(map));
+                setRaw(name1, () -> Value.map(map));
             }
             else {
                 Value value = valueSupplier.get();
@@ -39,14 +40,14 @@ public class ValueMap {
                 if (value.isMap()) map = value.getMap();
                 else {
                     map = new ValueMap();
-                    values.put(name1, () -> Value.map(map));
+                    setRaw(name1, () -> Value.map(map));
                 }
             }
 
             // Set the supplier
             map.set(name2, supplier);
         }
-        else values.put(name, supplier);
+        else setRaw(name, supplier);
 
         return this;
     }
@@ -102,7 +103,7 @@ public class ValueMap {
             String name2 = name.substring(dotI + 1);
 
             // Get child value
-            Supplier<Value> valueSupplier = values.get(name1);
+            Supplier<Value> valueSupplier = getRaw(name1);
             if (valueSupplier == null) return null;
 
             // Make sure the child value is a map
@@ -113,12 +114,22 @@ public class ValueMap {
             return value.getMap().get(name2);
         }
 
-        return values.get(name);
+        return getRaw(name);
     }
 
     /** Gets the variable supplier for the provided name. */
     public Supplier<Value> getRaw(String name) {
         return values.get(name);
+    }
+
+    /** Sets the variable supplier for the provided name. */
+    public Supplier<Value> setRaw(String name, Supplier<Value> supplier) {
+        return values.put(name, supplier);
+    }
+
+    /** Removes the variable supplier for the provided name. */
+    public Supplier<Value> removeRaw(String name) {
+        return values.remove(name);
     }
 
     /** Returns a set of all variable names. */
@@ -146,15 +157,15 @@ public class ValueMap {
             String name2 = name.substring(dotI + 1);
 
             // Get child value
-            Supplier<Value> valueSupplier = values.get(name1);
+            Supplier<Value> valueSupplier = getRaw(name1);
             if (valueSupplier == null) return null;
             else {
                 // Make sure the child value is a map
                 Value value = valueSupplier.get();
-                if (!value.isMap()) return values.remove(name1);
+                if (!value.isMap()) return removeRaw(name1);
                 else return value.getMap().remove(name2);
             }
         }
-        else return values.remove(name);
+        else return removeRaw(name);
     }
 }
