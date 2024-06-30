@@ -174,6 +174,8 @@ public class StandardLib {
         return Value.string(new String(padded));
     }
 
+    // Formatters
+
     public static Value formatDateTime(Starscript ss, int argCount) {
         if (argCount < 1 || argCount > 2) ss.error("formatTime(fmt, timezone) requires 1 to 2 arguments, got %d.", argCount);
         try {
@@ -192,10 +194,10 @@ public class StandardLib {
 
     public static Value format(Starscript ss, int argCount) {
         if (argCount < 1) ss.error("format(fmt, ...args) requires at least 1 argument, got %d.", argCount);
-        ArrayList<Object> args = new ArrayList<Object>();
-        for (int i = 1; i < argCount; i ++) {
+        Object[] args = new Object[argCount];
+        for (int i = argCount - 1; i >= 1; i --) {
             Value v = ss.pop();
-            Object o = null;
+            Object o;
             switch (v.type) {
                 case Boolean: o = v.getBool(); break;
                 case Number: o = v.getNumber(); break;
@@ -203,13 +205,13 @@ public class StandardLib {
                 case Function: o = v.getFunction(); break;
                 case Map: o = v.getMap(); break;
                 case Null:
-                default: break;
+                default: o = null; break;
             }
-            args.add(0, o);
+            args[i] = o;
         }
         String fmt = ss.popString("Argument `fmt` to format() needs to be a string.");
         try {
-            return Value.string(String.format(fmt, args.toArray()));
+            return Value.string(String.format(fmt, args));
         }
         catch (IllegalFormatException e) {
             ss.error(e.toString());
