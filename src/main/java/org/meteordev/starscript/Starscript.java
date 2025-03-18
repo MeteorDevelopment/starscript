@@ -7,10 +7,15 @@ import org.meteordev.starscript.utils.*;
 import org.meteordev.starscript.value.Value;
 import org.meteordev.starscript.value.ValueMap;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /** A VM (virtual machine) that can run compiled starscript code, {@link Script}. */
 public class Starscript {
+    public static final Set<String> KEYWORDS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("null", "true", "false", "and", "or")));
     private final ValueMap globals;
 
     private final Stack<Value> stack = new Stack<>();
