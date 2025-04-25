@@ -1,6 +1,8 @@
 package org.meteordev.starscript.value;
 
+import org.meteordev.starscript.Starscript;
 import org.meteordev.starscript.utils.SFunction;
+import org.meteordev.starscript.utils.StarscriptError;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -124,6 +126,9 @@ public class ValueMap {
 
     /** Sets the variable supplier for the provided name. */
     public Supplier<Value> setRaw(String name, Supplier<Value> supplier) {
+        if (Starscript.KEYWORDS.contains(name)) {
+            throw new StarscriptError("Variable name cannot be a keyword.");
+        }
         return values.put(name, supplier);
     }
 
