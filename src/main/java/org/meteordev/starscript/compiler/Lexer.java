@@ -11,6 +11,7 @@ public class Lexer {
     public char ch;
 
     private final String source;
+    private final StringBuilder stringBuilder = new StringBuilder();
     public int start, current;
     private int expressionDepth;
 
@@ -42,7 +43,7 @@ public class Lexer {
             else {
                 switch (c) {
                     case '\'':
-                    case '"':  string(); break;
+                    case '"':  string(c); break;
 
                     case '=':  if (match('=')) createToken(Token.EqualEqual); else unexpected(); break;
                     case '!':  createToken(match('=') ? Token.BangEqual : Token.Bang); break;
@@ -103,10 +104,22 @@ public class Lexer {
         }
     }
 
-    private void string() {
-        while (!isAtEnd() && peek() != '"' && peek() != '\'') {
-            if (peek() == '\n') line++;
-            advance();
+    private void string(char delimiter) {
+        stringBuilder.setLength(0);
+
+        while (!isAtEnd()) {
+            if (peek() == '\\') {
+                advance();
+                if (isAtEnd()) {
+                    createToken(Token.Error, "Unterminated expression.");
+                }
+            } else if (peek() == delimiter) {
+                break;
+            } else if (peek() == '\n')  {
+                line++;
+            }
+
+            stringBuilder.append(advance());
         }
 
         if (isAtEnd()) {
@@ -114,7 +127,7 @@ public class Lexer {
         }
         else {
             advance();
-            createToken(Token.String, source.substring(start + 1, current - 1));
+            createToken(Token.String, stringBuilder.toString());
         }
     }
 
