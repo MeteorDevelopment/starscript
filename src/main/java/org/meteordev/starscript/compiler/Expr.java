@@ -131,6 +131,7 @@ public abstract class Expr {
         }
 
         public Expr getExpr() {
+            if (children.length == 0) return null;
             return children[0];
         }
     }
