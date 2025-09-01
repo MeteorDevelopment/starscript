@@ -125,11 +125,13 @@ public class Starscript {
 
     /** Returns a value from the stack without removing it. */
     public Value peek() {
+        if (stack.size() == 0) return Value.null_();
         return stack.peek();
     }
 
     /** Returns a value from the stack with an offset without removing it. */
     public Value peek(int offset) {
+        if (stack.size() <= offset) return Value.null_();
         return stack.peek(offset);
     }
 
