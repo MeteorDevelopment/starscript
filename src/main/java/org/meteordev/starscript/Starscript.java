@@ -50,19 +50,19 @@ public class Starscript {
                 case Modulo:            { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number(a.getNumber() % b.getNumber())); else error("Can only modulo 2 numbers."); break; }
                 case Power:             { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number(Math.pow(a.getNumber(), b.getNumber()))); else error("Can only power 2 numbers."); break; }
 
-                case BitwiseAnd:        { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number(((int) a.getNumber()) & ((int) b.getNumber()))); else error("This operation requires 2 numbers."); break; }
-                case BitwiseOr:         { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number(((int) a.getNumber()) | ((int) b.getNumber()))); else error("This operation requires 2 numbers."); break; }
-                case BitwiseXor:        { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number(((int) a.getNumber()) ^ ((int) b.getNumber()))); else error("This operation requires 2 numbers."); break; }
-                case LeftShift:         { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number(((int) a.getNumber()) << ((int) b.getNumber()))); else error("This operation requires 2 numbers."); break; }
-                case RightShift:        { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number(((int) a.getNumber()) >> ((int) b.getNumber()))); else error("This operation requires 2 numbers."); break; }
-                case UnsignedRightShift: { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number(((int) a.getNumber()) >>> ((int) b.getNumber()))); else error("This operation requires 2 numbers."); break; }
+                case BitwiseAnd:        { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number((long) a.getNumber() & (long) b.getNumber())); else error("This operation requires 2 numbers."); break; }
+                case BitwiseOr:         { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number((long) a.getNumber() | (long) b.getNumber())); else error("This operation requires 2 numbers."); break; }
+                case BitwiseXor:        { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number((long) a.getNumber() ^ (long) b.getNumber())); else error("This operation requires 2 numbers."); break; }
+                case LeftShift:         { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number((long) a.getNumber() << (long) b.getNumber())); else error("This operation requires 2 numbers."); break; }
+                case RightShift:        { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number((long) a.getNumber() >> (long) b.getNumber())); else error("This operation requires 2 numbers."); break; }
+                case UnsignedRightShift: { Value b = pop(); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number((long) a.getNumber() >>> (long) b.getNumber())); else error("This operation requires 2 numbers."); break; }
 
                 case AddConstant:       { Value b = script.constants.get(script.code[ip++] & 0xFF); Value a = pop(); if (a.isNumber() && b.isNumber()) push(Value.number(a.getNumber() + b.getNumber())); else if (a.isString()) push(Value.string(a.getString() + b.toString())); else error("Can only add 2 numbers or 1 string and other value."); break; }
 
                 case Pop:               pop(); break;
                 case Not:               push(Value.bool(!pop().isTruthy())); break;
                 case Negate:            { Value a = pop(); if (a.isNumber()) push(Value.number(-a.getNumber())); else error("This operation requires a number."); break; }
-                case BitwiseNot:        { Value a = pop(); if (a.isNumber()) push(Value.number(~((int) a.getNumber()))); else error("This operation requires a number."); break; }
+                case BitwiseNot:        { Value a = pop(); if (a.isNumber()) push(Value.number(~((long) a.getNumber()))); else error("This operation requires a number."); break; }
 
                 case Equals:            push(Value.bool(pop().equals(pop()))); break;
                 case NotEquals:         push(Value.bool(!pop().equals(pop()))); break;
