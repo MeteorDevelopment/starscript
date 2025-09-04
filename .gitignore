@@ -1,3 +1,5 @@
 .gradle
 .idea
 build
+/src/test/generated_tests/
+/out/

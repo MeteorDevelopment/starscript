@@ -34,4 +34,8 @@ public class Stack<T> {
     public T peek(int offset) {
         return items[size - 1 - offset];
     }
+
+    public int size() {
+        return size;
+    }
 }
