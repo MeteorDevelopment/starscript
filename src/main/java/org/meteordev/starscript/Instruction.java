@@ -14,6 +14,14 @@ public enum Instruction {
     Modulo,
     Power,
 
+    BitwiseAnd,
+    BitwiseOr,
+    BitwiseXor,
+    BitwiseNot,
+    LeftShift,
+    RightShift,
+    UnsignedRightShift,
+
     AddConstant,
 
     Pop,
