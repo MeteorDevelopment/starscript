@@ -47,8 +47,26 @@ public class Lexer {
 
                     case '=':  if (match('=')) createToken(Token.EqualEqual); else unexpected(); break;
                     case '!':  createToken(match('=') ? Token.BangEqual : Token.Bang); break;
-                    case '>':  createToken(match('=') ? Token.GreaterEqual : Token.Greater); break;
-                    case '<':  createToken(match('=') ? Token.LessEqual : Token.Less); break;
+                    case '>':
+                        if (match('=')) {
+                            createToken(Token.GreaterEqual);
+                            break;
+                        }
+                        if (match('>')) {
+                            createToken(match('>') ? Token.TripleGreater : Token.DoubleGreater);
+                            break;
+                        }
+                        createToken(Token.Greater); break;
+                    case '<':
+                        if (match('=')) {
+                            createToken(Token.LessEqual);
+                            break;
+                        }
+                        if (match('<')) {
+                            createToken(Token.DoubleLess);
+                            break;
+                        }
+                        createToken(Token.Less); break;
 
                     case '+':  createToken(Token.Plus); break;
                     case '-':  createToken(Token.Minus); break;
@@ -70,6 +88,10 @@ public class Lexer {
                         while (isDigit(peek())) advance();
                         createToken(Token.Section, source.substring(start + 1, current));
                         break;
+
+                    case '&': createToken(Token.Ampersand); break;
+                    case '|': createToken(match('^') ? Token.VBarUpArrow : Token.VBar); break;
+                    case '~': createToken(Token.Tilde); break;
 
                     default:   unexpected();
                 }
