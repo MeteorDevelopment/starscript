@@ -3,6 +3,7 @@ package org.meteordev.starscript;
 import org.meteordev.starscript.compiler.Compiler;
 import org.meteordev.starscript.compiler.Parser;
 import org.meteordev.starscript.utils.Error;
+import org.meteordev.starscript.utils.StarscriptError;
 import org.meteordev.starscript.value.Value;
 import org.meteordev.starscript.value.ValueMap;
 
@@ -43,5 +44,10 @@ public class Main {
         ss.remove("player.name");
 
         System.out.println("Output #2: " + ss.run(script));
+
+        try {
+            ss.set("true", Value.null_());
+            throw new AssertionError("Set variable name as keyword.");
+        } catch (StarscriptError ignored) {}
     }
 }

@@ -2,11 +2,12 @@ package org.meteordev.starscript.compiler;
 
 import org.meteordev.starscript.utils.Error;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /** Parser that produces AST (abstract syntax tree) from starscript code and reports errors. */
 public class Parser {
+    public static final Set<String> KEYWORDS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("null", "true", "false", "and", "or")));
+
     private final Lexer lexer;
 
     private final TokenData previous = new TokenData();
