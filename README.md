@@ -4,6 +4,7 @@ Fast text formatting language for Java.
 - Lightweight with no dependencies
 - Faster than `String.format` (See [Benchmark](https://github.com/MeteorDevelopment/starscript/blob/master/src/test/java/org/meteordev/starscript/Benchmark.java))
 - Standard operators + - * / % ^
+- Bitwise operators & | ~ << >> >>> ^^
 - Ability to call functions defined in java
 - Variables can be different each time they are used
 - Conditional output (ternary operator)
@@ -27,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    implementation "org.meteordev:starscript:0.2.3"
+    implementation "org.meteordev:starscript:0.2.5"
 }
 ```
 
