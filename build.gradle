@@ -6,8 +6,6 @@ plugins {
 group "org.meteordev"
 version "0.2.4"
 
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
-
 java {
     sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
@@ -36,6 +34,10 @@ compileTestJava {
 
 javadoc {
     options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+test {
+    failOnNoDiscoveredTests = false
 }
 
 publishing {
