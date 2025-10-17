@@ -148,9 +148,22 @@ public class Parser {
 
     private Expr factor() {
         int start = previous.start;
-        Expr expr = unary();
+        Expr expr = bitwise();
 
         while (match(Token.Star, Token.Slash, Token.Percentage, Token.UpArrow)) {
+            Token op = previous.token;
+            Expr right = bitwise();
+            expr = new Expr.Binary(start, previous.end, expr, op, right);
+        }
+
+        return expr;
+    }
+
+    private Expr bitwise() {
+        int start = previous.start;
+        Expr expr = unary();
+
+        while (match(Token.Ampersand, Token.VBar, Token.DoubleUpArrow, Token.DoubleLess, Token.DoubleGreater, Token.TripleGreater)) {
             Token op = previous.token;
             Expr right = unary();
             expr = new Expr.Binary(start, previous.end, expr, op, right);
@@ -160,7 +173,7 @@ public class Parser {
     }
 
     private Expr unary() {
-        if (match(Token.Bang, Token.Minus)) {
+        if (match(Token.Bang, Token.Minus, Token.Tilde)) {
             int start = previous.start;
 
             Token op = previous.token;
@@ -353,7 +366,7 @@ public class Parser {
 
         /** Helper method that returns true if there was 1 or more errors. */
         public boolean hasErrors() {
-            return errors.size() > 0;
+            return !errors.isEmpty();
         }
 
         public void accept(Expr.Visitor visitor) {

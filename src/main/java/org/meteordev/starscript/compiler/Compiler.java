@@ -88,19 +88,26 @@ public class Compiler implements Expr.Visitor {
         else compile(expr.getRight());
 
         switch (expr.op) {
-            case Plus:         script.write(Instruction.Add); break;
-            case Minus:        script.write(Instruction.Subtract); break;
-            case Star:         script.write(Instruction.Multiply); break;
-            case Slash:        script.write(Instruction.Divide); break;
-            case Percentage:   script.write(Instruction.Modulo); break;
-            case UpArrow:      script.write(Instruction.Power); break;
+            case Plus:          script.write(Instruction.Add); break;
+            case Minus:         script.write(Instruction.Subtract); break;
+            case Star:          script.write(Instruction.Multiply); break;
+            case Slash:         script.write(Instruction.Divide); break;
+            case Percentage:    script.write(Instruction.Modulo); break;
+            case UpArrow:       script.write(Instruction.Power); break;
 
-            case EqualEqual:   script.write(Instruction.Equals); break;
-            case BangEqual:    script.write(Instruction.NotEquals); break;
-            case Greater:      script.write(Instruction.Greater); break;
-            case GreaterEqual: script.write(Instruction.GreaterEqual); break;
-            case Less:         script.write(Instruction.Less); break;
-            case LessEqual:    script.write(Instruction.LessEqual); break;
+            case EqualEqual:    script.write(Instruction.Equals); break;
+            case BangEqual:     script.write(Instruction.NotEquals); break;
+            case Greater:       script.write(Instruction.Greater); break;
+            case GreaterEqual:  script.write(Instruction.GreaterEqual); break;
+            case Less:          script.write(Instruction.Less); break;
+            case LessEqual:     script.write(Instruction.LessEqual); break;
+
+            case Ampersand:     script.write(Instruction.BitwiseAnd); break;
+            case VBar:          script.write(Instruction.BitwiseOr); break;
+            case DoubleUpArrow: script.write(Instruction.BitwiseXor); break;
+            case DoubleLess:    script.write(Instruction.LeftShift); break;
+            case DoubleGreater: script.write(Instruction.RightShift); break;
+            case TripleGreater: script.write(Instruction.UnsignedRightShift); break;
         }
     }
 
@@ -110,6 +117,7 @@ public class Compiler implements Expr.Visitor {
 
         if (expr.op == Token.Bang) script.write(Instruction.Not);
         else if (expr.op == Token.Minus) script.write(Instruction.Negate);
+        else if (expr.op == Token.Tilde) script.write(Instruction.BitwiseNot);
     }
 
     @Override

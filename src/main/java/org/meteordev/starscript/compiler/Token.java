@@ -23,5 +23,11 @@ public enum Token {
 
     Section,
 
+    Ampersand, VBar,
+    Tilde,
+    DoubleUpArrow,
+    DoubleGreater, TripleGreater,
+    DoubleLess,
+
     Error, EOF
 }

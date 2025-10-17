@@ -44,6 +44,13 @@ public class SemanticTokenProvider {
                 case Bang:
                 case QuestionMark:
                 case Colon:
+                case Ampersand:
+                case VBar:
+                case DoubleUpArrow:
+                case DoubleLess:
+                case DoubleGreater:
+                case TripleGreater:
+                case Tilde:
                     tokens.add(new SemanticToken(SemanticTokenType.Operator, lexer.start, lexer.current));
                     break;
 
