@@ -46,7 +46,7 @@ public class SemanticTokenProvider {
                 case Colon:
                 case Ampersand:
                 case VBar:
-                case VBarUpArrow:
+                case DoubleUpArrow:
                 case DoubleLess:
                 case DoubleGreater:
                 case TripleGreater:

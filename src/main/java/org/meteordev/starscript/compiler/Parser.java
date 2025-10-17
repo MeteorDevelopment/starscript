@@ -162,7 +162,7 @@ public class Parser {
         int start = previous.start;
         Expr expr = unary();
 
-        while (match(Token.Ampersand, Token.VBar, Token.VBarUpArrow, Token.DoubleLess, Token.DoubleGreater, Token.TripleGreater)) {
+        while (match(Token.Ampersand, Token.VBar, Token.DoubleUpArrow, Token.DoubleLess, Token.DoubleGreater, Token.TripleGreater)) {
             Token op = previous.token;
             Expr right = unary();
             expr = new Expr.Binary(start, previous.end, expr, op, right);

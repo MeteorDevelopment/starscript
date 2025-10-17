@@ -24,7 +24,8 @@ public enum Token {
     Section,
 
     Ampersand, VBar,
-    Tilde, VBarUpArrow,
+    Tilde,
+    DoubleUpArrow,
     DoubleGreater, TripleGreater,
     DoubleLess,
 

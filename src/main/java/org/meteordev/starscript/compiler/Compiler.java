@@ -104,7 +104,7 @@ public class Compiler implements Expr.Visitor {
 
             case Ampersand:     script.write(Instruction.BitwiseAnd); break;
             case VBar:          script.write(Instruction.BitwiseOr); break;
-            case VBarUpArrow:   script.write(Instruction.BitwiseXor); break;
+            case DoubleUpArrow:   script.write(Instruction.BitwiseXor); break;
             case DoubleLess:    script.write(Instruction.LeftShift); break;
             case DoubleGreater: script.write(Instruction.RightShift); break;
             case TripleGreater: script.write(Instruction.UnsignedRightShift); break;

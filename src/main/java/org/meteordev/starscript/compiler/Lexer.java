@@ -73,7 +73,7 @@ public class Lexer {
                     case '*':  createToken(Token.Star); break;
                     case '/':  createToken(Token.Slash); break;
                     case '%':  createToken(Token.Percentage); break;
-                    case '^':  createToken(Token.UpArrow); break;
+                    case '^':  createToken(match('^') ? Token.DoubleUpArrow : Token.UpArrow); break;
 
                     case '.':  createToken(Token.Dot); break;
                     case ',':  createToken(Token.Comma); break;
@@ -90,7 +90,7 @@ public class Lexer {
                         break;
 
                     case '&': createToken(Token.Ampersand); break;
-                    case '|': createToken(match('^') ? Token.VBarUpArrow : Token.VBar); break;
+                    case '|': createToken(Token.VBar); break;
                     case '~': createToken(Token.Tilde); break;
 
                     default:   unexpected();
